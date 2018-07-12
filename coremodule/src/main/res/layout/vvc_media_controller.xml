@@ -21,10 +21,9 @@
     android:layout_width="match_parent"
     android:layout_height="?actionBarSize"
     android:layout_gravity="bottom"
-    android:layoutDirection="ltr"
-    android:orientation="vertical"
     android:background="@mipmap/player_bar_bottom"
-    >
+    android:layoutDirection="ltr"
+    android:orientation="vertical">
 
     <ImageView
         android:id="@+id/player_play_img"
@@ -81,6 +80,19 @@
         app:layout_constraintStart_toEndOf="@+id/mediacontroller_progress"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+    <ImageView
+        android:id="@+id/player_source"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:src="@mipmap/bt_player_copy_nor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/is_full_screen"
+        app:layout_constraintStart_toEndOf="@+id/time"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:id="@+id/is_full_screen"
         android:layout_width="wrap_content"
@@ -91,7 +103,7 @@
         android:src="@drawable/selector_bt_player_full"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/time"
+        app:layout_constraintStart_toEndOf="@+id/player_source"
         app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

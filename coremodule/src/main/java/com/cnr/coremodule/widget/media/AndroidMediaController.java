@@ -18,21 +18,27 @@
 package com.cnr.coremodule.widget.media;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.Slide;
 import android.transition.TransitionManager;
-import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -45,18 +51,19 @@ import android.widget.TextView;
 import com.cnr.coremodule.R;
 import com.cnr.coremodule.widget.util.CommonUtil;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Formatter;
 import java.util.Locale;
 
-import javax.inject.Inject;
+import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
-import static android.view.GestureDetector.*;
-
-public class AndroidMediaController  implements IMediaController,View.OnTouchListener{
+public class AndroidMediaController  implements IMediaController,View.OnTouchListener {
 
     private AppCompatActivity activity;
     private ConstraintLayout player_contorl_top_layout;
     private ConstraintLayout player_contorl_bottom_layout;
+    private ConstraintLayout player_control_backlayout_ConstraintLayout;
     private ConstraintLayout root_controller;
     private MediaPlayerControl mPlayer;
     private boolean mShowing;
@@ -86,7 +93,41 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
 
     private Animation bottomEnterAnimation;
 
+    protected float mDownX;
+    protected float mDownY;
+    protected boolean mChangeVolume;
+    protected boolean mChangeBrightness;
+    protected int mGestureDownVolume;
+    protected float mGestureDownBrightness;
+    protected boolean mTouchingProgressBar;
+    protected boolean mChangePosition;
+    public static final int THRESHOLD = 80;
+    protected long mGestureDownPosition;
+    protected AudioManager mAudioManager;
+    protected int mScreenWidth;
+    protected int mScreenHeight;
+    protected int mSeekTimePosition;
+    protected Dialog mBrightnessDialog;
+    protected Dialog mProgressDialog;
+    protected Dialog mVolumeDialog;
 
+    protected ProgressBar mDialogVolumeProgressBar;
+    protected TextView mDialogVolumeTextView;
+    protected ImageView mDialogVolumeImageView;
+    protected ProgressBar mDialogBrightnessProgressBar;
+    protected TextView mDialogBrightnessTextView;
+
+    protected TextView mDialogSeekTime;
+    protected TextView mDialogTotalTime;
+    protected ProgressBar mDialogProgressBar;
+    protected ImageView mDialogIcon;
+    private boolean brocasting = false;
+    protected TextView videoCurrentTime;
+    protected ImageView batteryLevel;
+
+    private SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm");
+
+    private ImageView mPlaySourceImg;
     public AndroidMediaController(Context mContext) {
         initView(mContext);
     }
@@ -95,6 +136,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         activity = CommonUtil.getAppCompActivity(mContext);
         player_contorl_top_layout = activity.findViewById(R.id.player_contorl_top_layout);
         player_contorl_bottom_layout = activity.findViewById(R.id.player_contorl_bottom_layout);
+        player_control_backlayout_ConstraintLayout = activity.findViewById(R.id.player_control_backlayout_ConstraintLayout);
         main_player_layout = activity.findViewById(R.id.main_player_layout);
         mScreenImageView = activity.findViewById(R.id.is_full_screen);
         mMainLayout = activity.findViewById(R.id.main_player_layout);
@@ -118,12 +160,15 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             }
             mProgress.setMax(1000);
         }
-        if (mScreenImageView != null){
+        if (mScreenImageView != null) {
             mScreenImageView.setOnClickListener(onClickListener);
         }
-        mLockImg =   activity.findViewById(R.id.player_lock);
+        mLockImg = activity.findViewById(R.id.player_lock);
         root_controller = activity.findViewById(R.id.root_controller);
         mLockImg.setOnClickListener(lockClickListener);
+        if (player_control_backlayout_ConstraintLayout != null) {
+            player_control_backlayout_ConstraintLayout.setOnClickListener(OrientationOnClickListener);
+        }
 
         topAnimation = AnimationUtils.loadAnimation(activity,
                 R.anim.player_translate_top);
@@ -135,7 +180,47 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
                 R.anim.player_translate_bottom_enter);
         main_player_layout.setOnTouchListener(this);
 
+        mScreenWidth = activity.getResources().getDisplayMetrics().widthPixels;
+        mScreenHeight = activity.getResources().getDisplayMetrics().heightPixels;
+        mAudioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+        videoCurrentTime = activity.findViewById(R.id.video_current_time);
+        batteryLevel = activity.findViewById(R.id.battery_level);
+        mPlaySourceImg = activity. findViewById(R.id.player_source);
+        setSystemTimeAndBattery();
     }
+
+    private BroadcastReceiver battertReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (Intent.ACTION_BATTERY_CHANGED.equals(action)) {
+                int level = intent.getIntExtra("level", 0);
+                int scale = intent.getIntExtra("scale", 100);
+                int percent = level * 100 / scale;
+                if (percent < 15) {
+                    batteryLevel.setBackgroundResource(R.mipmap.jz_battery_level_10);
+                } else if (percent >= 15 && percent < 40) {
+                    batteryLevel.setBackgroundResource(R.mipmap.jz_battery_level_30);
+                } else if (percent >= 40 && percent < 60) {
+                    batteryLevel.setBackgroundResource(R.mipmap.jz_battery_level_50);
+                } else if (percent >= 60 && percent < 80) {
+                    batteryLevel.setBackgroundResource(R.mipmap.jz_battery_level_70);
+                } else if (percent >= 80 && percent < 95) {
+                    batteryLevel.setBackgroundResource(R.mipmap.jz_battery_level_90);
+                } else if (percent >= 95 && percent <= 100) {
+                    batteryLevel.setBackgroundResource(R.mipmap.jz_battery_level_100);
+                }
+                activity.unregisterReceiver(battertReceiver);
+                brocasting = false;
+            }
+        }
+    };
+
+    private View.OnClickListener OrientationOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            setOrientation();
+        }
+    };
 
     private View.OnClickListener lockClickListener = new View.OnClickListener() {
         @Override
@@ -145,14 +230,14 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     };
 
     private void lockAndUnlock() {
-        if (isLocked){
+        if (isLocked) {
             //锁
             isLocked = false;
             mLockImg.setImageResource(R.mipmap.player_unlock);
             hide();
             mHandler.sendEmptyMessageDelayed(LOCKIMG_FADE_OUT_INFO,
                     sDefaultTimeout);
-        }else {
+        } else {
             //解
             isLocked = true;
             mLockImg.setImageResource(R.mipmap.player_locked);
@@ -160,6 +245,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             mHandler.removeMessages(LOCKIMG_FADE_OUT_INFO);
         }
     }
+
     @Override
     public void hide() {
         if (mShowing) {
@@ -169,11 +255,11 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
 //            setSlide(player_contorl_bottom_layout, View.GONE, Gravity.BOTTOM);
 
 
-            startAnimation(player_contorl_top_layout,topAnimation,View.GONE);
-            startAnimation(player_contorl_bottom_layout,bottomAnimation,View.GONE);
+            startAnimation(player_contorl_top_layout, topAnimation, View.GONE);
+            startAnimation(player_contorl_bottom_layout, bottomAnimation, View.GONE);
 
             if (orientation()) {
-                if (isLocked){
+                if (isLocked) {
                     setSlide(root_controller, View.GONE, Gravity.LEFT);
                 }
             }
@@ -181,10 +267,12 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             mShowing = false;
         }
     }
-    private void startAnimation(ConstraintLayout linearLayout, Animation animation,int finalState){
+
+    private void startAnimation(ConstraintLayout linearLayout, Animation animation, int finalState) {
         linearLayout.startAnimation(animation);
         linearLayout.setVisibility(finalState);
     }
+
     @Override
     public void show(int timeout) {
         if (!mShowing) {
@@ -196,12 +284,12 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             disableUnsupportedButtons();
 //            setSlide(player_contorl_top_layout, View.VISIBLE, Gravity.TOP);
 //            setSlide(player_contorl_bottom_layout, View.VISIBLE, Gravity.BOTTOM);
-            startAnimation(player_contorl_bottom_layout,bottomEnterAnimation,View.VISIBLE);
-            startAnimation(player_contorl_top_layout,topEnterAnimation,View.VISIBLE);
+            startAnimation(player_contorl_bottom_layout, bottomEnterAnimation, View.VISIBLE);
+            startAnimation(player_contorl_top_layout, topEnterAnimation, View.VISIBLE);
 
             //锁屏幕
             if (orientation()) {
-                if (mLockImg != null){
+                if (mLockImg != null) {
                     setSlide(root_controller, View.VISIBLE, Gravity.LEFT);
                 }
             }
@@ -216,6 +304,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             mHandler.removeMessages(FADE_OUT);
             mHandler.sendMessageDelayed(msg, timeout);
         }
+        setSystemTimeAndBattery();
     }
 
     @Override
@@ -246,7 +335,6 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     }
 
 
-
     @Override
     public void show() {
         show(sDefaultTimeout);
@@ -261,13 +349,14 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     public boolean isLocked() {
         return isLocked;
     }
+
     @Override
-    public void showLockImgVs(){
-        if (root_controller.getVisibility() != View.VISIBLE){
+    public void showLockImgVs() {
+        if (root_controller.getVisibility() != View.VISIBLE) {
             setSlide(root_controller, View.VISIBLE, Gravity.LEFT);
             mHandler.sendEmptyMessageDelayed(LOCKIMG_FADE_OUT_INFO,
                     sDefaultTimeout);
-        }else {
+        } else {
             setSlide(root_controller, View.GONE, Gravity.LEFT);
             mHandler.removeMessages(LOCKIMG_FADE_OUT_INFO);
         }
@@ -286,6 +375,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             linearLayout.setVisibility(finalState);
         }
     }
+
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         @Override
@@ -431,7 +521,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             isPause = false;
             mPlayer.pause();
         } else {
-            isPause =true;
+            isPause = true;
             mPlayer.start();
         }
         updatePausePlay();
@@ -488,20 +578,246 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         mMainLayout.getLayoutParams().width = FrameLayout.LayoutParams.MATCH_PARENT;
         ijkVideoView.toggleAspectRatio(IRenderView.AR_ASPECT_FILL_PARENT);
     }
-    public boolean orientation(){
+
+    public boolean orientation() {
         return activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    public void setOrientation() {
+        if (orientation()) {
+            setSmallScreen();
+        } else {
+            activity.finish();
+        }
+    }
+
+    public void stopPlay(Boolean mBackPressed) {
+        if (mBackPressed) {
+            ijkVideoView.stopPlayback();
+            ijkVideoView.release(true);
+        }
+        IjkMediaPlayer.native_profileEnd();
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (!isLocked()){
+        if (!isLocked()) {
             showLockImgVs();
             return isLocked();
         }
-        ijkVideoView.toggleMediaControlsVisiblity();
+        float x = event.getX();
+        float y = event.getY();
+        int id = v.getId();
+        if (id == R.id.main_player_layout) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    mTouchingProgressBar = true;
+                    mDownX = x;
+                    mDownY = y;
+                    mChangeVolume = false;
+                    mChangePosition = false;
+                    mChangeBrightness = false;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float deltaX = x - mDownX;
+                    float deltaY = y - mDownY;
+                    float absDeltaX = Math.abs(deltaX);
+                    float absDeltaY = Math.abs(deltaY);
+                    if (orientation()) {
+                        if (!mChangePosition && !mChangeVolume && !mChangeBrightness) {
+                            if (absDeltaX > THRESHOLD || absDeltaY > THRESHOLD) {
+
+                                if (absDeltaX >= THRESHOLD) {
+                                    mChangePosition = true;
+                                    if (mPlayer != null) {
+                                        mGestureDownPosition = mPlayer.getCurrentPosition();
+                                    }
+                                } else {
+                                    //如果y轴滑动距离超过设置的处理范围，那么进行滑动事件处理
+                                    if (mDownX < mScreenWidth * 0.5f) {//左侧改变亮度
+                                        mChangeBrightness = true;
+                                        WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+                                        if (lp.screenBrightness < 0) {
+                                            try {
+                                                mGestureDownBrightness = android.provider.Settings.System.getInt(activity.getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS);
+                                            } catch (Settings.SettingNotFoundException e) {
+                                                e.printStackTrace();
+                                            }
+                                        } else {
+                                            mGestureDownBrightness = lp.screenBrightness * 255;
+                                        }
+                                    } else {//右侧改变声音
+                                        mChangeVolume = true;
+                                        mGestureDownVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (mChangePosition) {
+                        if (mPlayer != null) {
+                            int totalTimeDuration = mPlayer.getDuration();
+                            mSeekTimePosition = (int) (mGestureDownPosition + deltaX * totalTimeDuration / mScreenWidth);
+                            if (mSeekTimePosition > totalTimeDuration)
+                                mSeekTimePosition = totalTimeDuration;
+                            String seekTime = stringForTime(mSeekTimePosition);
+                            String totalTime = stringForTime(totalTimeDuration);
+                            showProgressDialog(deltaX, seekTime, mSeekTimePosition, totalTime, totalTimeDuration);
+                        }
+                    }
+                    if (mChangeVolume) {
+                        deltaY = -deltaY;
+                        int max = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                        int deltaV = (int) (max * deltaY * 3 / mScreenHeight);
+                        mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mGestureDownVolume + deltaV, 0);
+                        //dialog中显示百分比
+                        int volumePercent = (int) (mGestureDownVolume * 100 / max + deltaY * 3 * 100 / mScreenHeight);
+                        showVolumeDialog(-deltaY, volumePercent);
+                    }
+
+                    if (mChangeBrightness) {
+                        deltaY = -deltaY;
+                        int deltaV = (int) (255 * deltaY * 3 / mScreenHeight);
+                        WindowManager.LayoutParams params = activity.getWindow().getAttributes();
+                        if (((mGestureDownBrightness + deltaV) / 255) >= 1) {//这和声音有区别，必须自己过滤一下负值
+                            params.screenBrightness = 1;
+                        } else if (((mGestureDownBrightness + deltaV) / 255) <= 0) {
+                            params.screenBrightness = 0.01f;
+                        } else {
+                            params.screenBrightness = (mGestureDownBrightness + deltaV) / 255;
+                        }
+                        activity.getWindow().setAttributes(params);
+                        //dialog中显示百分比
+                        int brightnessPercent = (int) (mGestureDownBrightness * 100 / 255 + deltaY * 3 * 100 / mScreenHeight);
+                        showBrightnessDialog(brightnessPercent);
+                    }
+
+                    break;
+                case MotionEvent.ACTION_UP:
+                    dismissVolumeDialog();
+                    dismissBrightnessDialog();
+                    dismissProgressDialog();
+                    if (mChangePosition) {
+                        if (mPlayer != null) {
+                            mPlayer.seekTo(mSeekTimePosition);
+                            setProgress();
+                        }
+                    }
+                    ijkVideoView.toggleMediaControlsVisiblity();
+                    break;
+            }
+            return isLocked;
+
+        }
         return false;
     }
+    @SuppressLint("DefaultLocale")
+    public void showBrightnessDialog(int brightnessPercent) {
+        if (mBrightnessDialog == null) {
+            View localView = LayoutInflater.from(activity).inflate(R.layout.jz_dialog_brightness, null);
+            mDialogBrightnessTextView = localView.findViewById(R.id.tv_brightness);
+            mDialogBrightnessProgressBar = localView.findViewById(R.id.brightness_progressbar);
+            mBrightnessDialog = createDialogWithView(localView);
+        }
+        if (!mBrightnessDialog.isShowing()) {
+            mBrightnessDialog.show();
+        }
+        if (brightnessPercent > 100) {
+            brightnessPercent = 100;
+        } else if (brightnessPercent < 0) {
+            brightnessPercent = 0;
+        }
+        mDialogBrightnessTextView.setText(String.format("%d%%", brightnessPercent));
+        mDialogBrightnessProgressBar.setProgress(brightnessPercent);
+    }
 
+    public void dismissVolumeDialog() {
+        if (mVolumeDialog != null) {
+            mVolumeDialog.dismiss();
+        }
+    }
+    public void dismissBrightnessDialog() {
+        if (mBrightnessDialog != null) {
+            mBrightnessDialog.dismiss();
+        }
+    }
+    public void showProgressDialog(float deltaX, String seekTime, long seekTimePosition, String totalTime, long totalTimeDuration) {
+        if (mProgressDialog == null) {
+            View localView = LayoutInflater.from(activity).inflate(R.layout.jz_dialog_progress, null);
+            mDialogProgressBar = localView.findViewById(R.id.duration_progressbar);
+            mDialogSeekTime = localView.findViewById(R.id.tv_current);
+            mDialogTotalTime = localView.findViewById(R.id.tv_duration);
+            mDialogIcon = localView.findViewById(R.id.duration_image_tip);
+            mProgressDialog = createDialogWithView(localView);
+        }
+        if (!mProgressDialog.isShowing()) {
+            mProgressDialog.show();
+        }
 
+        mDialogSeekTime.setText(seekTime);
+        mDialogTotalTime.setText(String.format(" / %s", totalTime));
+
+        mDialogProgressBar.setProgress(totalTimeDuration <= 0 ? 0 : (int) (seekTimePosition * 100 / totalTimeDuration));
+        if (deltaX > 0) {
+            mDialogIcon.setBackgroundResource(R.mipmap.jz_forward_icon);
+        } else {
+            mDialogIcon.setBackgroundResource(R.mipmap.jz_backward_icon);
+        }
+    }
+    public void dismissProgressDialog() {
+        if (mProgressDialog != null) {
+            mProgressDialog.dismiss();
+        }
+    }
+    @SuppressLint("DefaultLocale")
+    public void showVolumeDialog(float deltaY, int volumePercent) {
+        if (mVolumeDialog == null) {
+            @SuppressLint("InflateParams") View localView = LayoutInflater.from(activity).inflate(R.layout.jz_dialog_volume, null);
+            mDialogVolumeImageView = localView.findViewById(R.id.volume_image_tip);
+            mDialogVolumeTextView = localView.findViewById(R.id.tv_volume);
+            mDialogVolumeProgressBar = localView.findViewById(R.id.volume_progressbar);
+            mVolumeDialog = createDialogWithView(localView);
+        }
+        if (!mVolumeDialog.isShowing()) {
+            mVolumeDialog.show();
+        }
+        if (volumePercent <= 0) {
+            mDialogVolumeImageView.setBackgroundResource(R.mipmap.jz_close_volume);
+        } else {
+            mDialogVolumeImageView.setBackgroundResource(R.mipmap.jz_add_volume);
+        }
+        if (volumePercent > 100) {
+            volumePercent = 100;
+        } else if (volumePercent < 0) {
+            volumePercent = 0;
+        }
+        mDialogVolumeTextView.setText(String.format("%d%%", volumePercent));
+        mDialogVolumeProgressBar.setProgress(volumePercent);
+    }
+    public Dialog createDialogWithView(View localView) {
+        Dialog dialog = new Dialog(activity, R.style.jz_style_dialog_progress);
+        dialog.setContentView(localView);
+        Window window = dialog.getWindow();
+        window.addFlags(Window.FEATURE_ACTION_BAR);
+        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        window.setLayout(-2, -2);
+        WindowManager.LayoutParams localLayoutParams = window.getAttributes();
+        localLayoutParams.gravity = Gravity.CENTER;
+        window.setAttributes(localLayoutParams);
+        return dialog;
+    }
+
+    public void setSystemTimeAndBattery() {
+        if (videoCurrentTime != null){
+            videoCurrentTime.setText(dateFormatter.format(new Date()));
+        }
+        if (!brocasting) {
+            activity.registerReceiver(
+                    battertReceiver,
+                    new IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+            );
+        }
+    }
 
 }

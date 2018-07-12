@@ -8,12 +8,22 @@
     android:layout_height="?android:attr/actionBarSize"
     android:background="@mipmap/player_bar_top">
 
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/player_control_backlayout_ConstraintLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        >
     <ImageView
         android:id="@+id/player_control_backlayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:contentDescription="@null"
         android:src="@drawable/player_land_ctrl_back"
@@ -36,8 +46,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/player_control_backlayout"
         app:layout_constraintTop_toTopOf="parent" />
-
-
+    </android.support.constraint.ConstraintLayout>
     <ImageView
         android:id="@+id/battery_level"
         android:layout_width="wrap_content"

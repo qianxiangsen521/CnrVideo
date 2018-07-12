@@ -3,7 +3,7 @@ package com.cnr.cnrvideo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.view.KeyEvent;
 
 import com.cnr.basemodule.base.BaseActivity;
 import com.cnr.basemodule.di.component.AppComponent;
@@ -32,8 +32,6 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements HttpCon
 
     }
 
-
-
     @Override
     public int initView(@Nullable Bundle savedInstanceState) {
         return R.layout.activity_main;
@@ -53,18 +51,13 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements HttpCon
 
     public void onBackPressed() {
         mBackPressed = true;
-
         super.onBackPressed();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mBackPressed ) {
-            mVideoView.stopPlayback();
-            mVideoView.release(true);
-        }
-        IjkMediaPlayer.native_profileEnd();
+        mMediaController.stopPlay(mBackPressed);
     }
 
     @Override
@@ -80,5 +73,11 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements HttpCon
     @Override
     public void showMessage(@NonNull String message) {
 
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        mMediaController.setOrientation();
+        return super.onKeyDown(keyCode, event);
     }
 }
