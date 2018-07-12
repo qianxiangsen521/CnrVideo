@@ -30,6 +30,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -547,9 +548,9 @@ public class IjkVideoView extends FrameLayout implements MediaPlayerControl {
                                 .setPositiveButton(R.string.VideoView_error_button,
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int whichButton) {
-                                            /* If we get here, there is no onError listener, so
-                                             * at least inform them that the video is over.
-                                             */
+                                                /* If we get here, there is no onError listener, so
+                                                 * at least inform them that the video is over.
+                                                 */
                                                 if (mOnCompletionListener != null) {
                                                     mOnCompletionListener.onCompletion(mMediaPlayer);
                                                 }
@@ -713,20 +714,22 @@ public class IjkVideoView extends FrameLayout implements MediaPlayerControl {
         }
     }
     //-------------------------------- qxs
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        if (!mMediaController.isLocked()){
-            mMediaController.showLockImgVs();
-            return mMediaController.isLocked();
-        }
-        if (isInPlaybackState() && mMediaController != null) {
-            toggleMediaControlsVisiblity();
-        }
-        return false;
-    }
+//    @Override
+//    public boolean onTouchEvent(MotionEvent ev) {
+//        if (!mMediaController.isLocked()){
+//            mMediaController.showLockImgVs();
+//            return mMediaController.isLocked();
+//        }
+//        if (isInPlaybackState() && mMediaController != null) {
+//            toggleMediaControlsVisiblity();
+//        }
+//        return false;
+//    }
+
     //-------------------------------- qxs
     @Override
     public boolean onTrackballEvent(MotionEvent ev) {
+        Log.d("TAGTAG", "onTrackballEvent: ");
         if (isInPlaybackState() && mMediaController != null) {
             toggleMediaControlsVisiblity();
         }
@@ -774,7 +777,8 @@ public class IjkVideoView extends FrameLayout implements MediaPlayerControl {
         return super.onKeyDown(keyCode, event);
     }
 
-    private void toggleMediaControlsVisiblity() {
+
+    public void toggleMediaControlsVisiblity() {
         if (mMediaController.isShowing()) {
             mMediaController.hide();
         } else {
@@ -790,6 +794,7 @@ public class IjkVideoView extends FrameLayout implements MediaPlayerControl {
         }
         mTargetState = STATE_PLAYING;
     }
+
 
     @Override
     public void pause() {
@@ -851,7 +856,7 @@ public class IjkVideoView extends FrameLayout implements MediaPlayerControl {
         return 0;
     }
 
-    private boolean isInPlaybackState() {
+     boolean isInPlaybackState() {
         return (mMediaPlayer != null &&
                 mCurrentState != STATE_ERROR &&
                 mCurrentState != STATE_IDLE &&

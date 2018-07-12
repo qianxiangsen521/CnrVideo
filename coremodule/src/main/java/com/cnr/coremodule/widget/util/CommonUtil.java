@@ -171,7 +171,8 @@ public class CommonUtil {
      * @return AppCompatActivity if it's not null
      */
     public static AppCompatActivity getAppCompActivity(Context context) {
-        if (context == null) return null;
+        if (context == null)
+            return null;
         if (context instanceof AppCompatActivity) {
             return (AppCompatActivity) context;
         } else if (context instanceof ContextThemeWrapper) {

@@ -28,9 +28,14 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.Slide;
 import android.transition.TransitionManager;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -43,7 +48,12 @@ import com.cnr.coremodule.widget.util.CommonUtil;
 import java.util.Formatter;
 import java.util.Locale;
 
-public class AndroidMediaController implements IMediaController{
+import javax.inject.Inject;
+
+import static android.view.GestureDetector.*;
+
+public class AndroidMediaController  implements IMediaController,View.OnTouchListener{
+
     private AppCompatActivity activity;
     private ConstraintLayout player_contorl_top_layout;
     private ConstraintLayout player_contorl_bottom_layout;
@@ -65,7 +75,18 @@ public class AndroidMediaController implements IMediaController{
     private FrameLayout mMainLayout;
     private IjkVideoView ijkVideoView;
     protected ImageView mLockImg;
+    private FrameLayout main_player_layout;
     private boolean isLocked = true;
+
+    private Animation topAnimation;
+
+    private Animation topEnterAnimation;
+
+    private Animation bottomAnimation;
+
+    private Animation bottomEnterAnimation;
+
+
     public AndroidMediaController(Context mContext) {
         initView(mContext);
     }
@@ -74,6 +95,7 @@ public class AndroidMediaController implements IMediaController{
         activity = CommonUtil.getAppCompActivity(mContext);
         player_contorl_top_layout = activity.findViewById(R.id.player_contorl_top_layout);
         player_contorl_bottom_layout = activity.findViewById(R.id.player_contorl_bottom_layout);
+        main_player_layout = activity.findViewById(R.id.main_player_layout);
         mScreenImageView = activity.findViewById(R.id.is_full_screen);
         mMainLayout = activity.findViewById(R.id.main_player_layout);
         ijkVideoView = activity.findViewById(R.id.ijkVideoView);
@@ -102,6 +124,17 @@ public class AndroidMediaController implements IMediaController{
         mLockImg =   activity.findViewById(R.id.player_lock);
         root_controller = activity.findViewById(R.id.root_controller);
         mLockImg.setOnClickListener(lockClickListener);
+
+        topAnimation = AnimationUtils.loadAnimation(activity,
+                R.anim.player_translate_top);
+        topEnterAnimation = AnimationUtils.loadAnimation(activity,
+                R.anim.player_translate_top_enter);
+        bottomAnimation = AnimationUtils.loadAnimation(activity,
+                R.anim.player_translate_bottom);
+        bottomEnterAnimation = AnimationUtils.loadAnimation(activity,
+                R.anim.player_translate_bottom_enter);
+        main_player_layout.setOnTouchListener(this);
+
     }
 
     private View.OnClickListener lockClickListener = new View.OnClickListener() {
@@ -131,8 +164,14 @@ public class AndroidMediaController implements IMediaController{
     public void hide() {
         if (mShowing) {
             mHandler.removeMessages(SHOW_PROGRESS);
-            setSlide(player_contorl_top_layout, View.GONE, Gravity.TOP);
-            setSlide(player_contorl_bottom_layout, View.GONE, Gravity.BOTTOM);
+
+//            setSlide(player_contorl_top_layout, View.GONE, Gravity.TOP);
+//            setSlide(player_contorl_bottom_layout, View.GONE, Gravity.BOTTOM);
+
+
+            startAnimation(player_contorl_top_layout,topAnimation,View.GONE);
+            startAnimation(player_contorl_bottom_layout,bottomAnimation,View.GONE);
+
             if (orientation()) {
                 if (isLocked){
                     setSlide(root_controller, View.GONE, Gravity.LEFT);
@@ -141,6 +180,10 @@ public class AndroidMediaController implements IMediaController{
 
             mShowing = false;
         }
+    }
+    private void startAnimation(ConstraintLayout linearLayout, Animation animation,int finalState){
+        linearLayout.startAnimation(animation);
+        linearLayout.setVisibility(finalState);
     }
     @Override
     public void show(int timeout) {
@@ -151,8 +194,11 @@ public class AndroidMediaController implements IMediaController{
                 mPauseButton.requestFocus();
             }
             disableUnsupportedButtons();
-            setSlide(player_contorl_top_layout, View.VISIBLE, Gravity.TOP);
-            setSlide(player_contorl_bottom_layout, View.VISIBLE, Gravity.BOTTOM);
+//            setSlide(player_contorl_top_layout, View.VISIBLE, Gravity.TOP);
+//            setSlide(player_contorl_bottom_layout, View.VISIBLE, Gravity.BOTTOM);
+            startAnimation(player_contorl_bottom_layout,bottomEnterAnimation,View.VISIBLE);
+            startAnimation(player_contorl_top_layout,topEnterAnimation,View.VISIBLE);
+
             //锁屏幕
             if (orientation()) {
                 if (mLockImg != null){
@@ -234,6 +280,7 @@ public class AndroidMediaController implements IMediaController{
         } else {
             Slide slide = new Slide();
             slide.setSlideEdge(type);
+//            slide.setDuration(500);
             TransitionManager.beginDelayedTransition(linearLayout, slide);
 
             linearLayout.setVisibility(finalState);
@@ -444,5 +491,17 @@ public class AndroidMediaController implements IMediaController{
     public boolean orientation(){
         return activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (!isLocked()){
+            showLockImgVs();
+            return isLocked();
+        }
+        ijkVideoView.toggleMediaControlsVisiblity();
+        return false;
+    }
+
+
 
 }

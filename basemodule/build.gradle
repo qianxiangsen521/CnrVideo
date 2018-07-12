@@ -1,18 +1,13 @@
 apply plugin: 'com.android.library'
-
 android {
-    compileSdkVersion 27
-
-
-
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+    buildToolsVersion rootProject.ext.android.buildToolsVersion
     defaultConfig {
-        minSdkVersion 17
-        targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
-
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        versionCode rootProject.ext.android.versionCode
+        versionName rootProject.ext.android.versionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
 
     buildTypes {
@@ -21,17 +16,77 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
+    //防止编译的时候oom、GC
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    //解决.9图问题
+    aaptOptions {
+        cruncherEnabled = false
+        useNewCruncher = false
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.13'
-    implementation 'com.jakewharton:butterknife:8.8.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    api rootProject.ext.dependencies["appcompat_v7"]
+    api rootProject.ext.dependencies["constraint_layout"]
+    api rootProject.ext.dependencies["cardview-v7"]
+    api rootProject.ext.dependencies["recyclerview-v7"]
+    api rootProject.ext.dependencies["support-v4"]
+    api rootProject.ext.dependencies["design"]
+    api rootProject.ext.dependencies["support_annotations"]
+    testApi rootProject.ext.dependencies["junit"]
+    androidTestApi rootProject.ext.dependencies["runner"]
+    androidTestApi rootProject.ext.dependencies["espresso_core"]
+
+    //dagger    annotationProcessor代替apt
+    api rootProject.ext.dependencies["dagger"]
+    annotationProcessor rootProject.ext.dependencies["dagger-compiler"]
+
+
+    api rootProject.ext.dependencies["javax-annotation"]
+    //网络
+    api rootProject.ext.dependencies["retrofit2"]
+    api rootProject.ext.dependencies["converter-gson"]
+    api rootProject.ext.dependencies["adapter-rxjava2"]
+    api rootProject.ext.dependencies["rxjava2:rxandroid"]
+    api rootProject.ext.dependencies["rxjava2"]
+    api rootProject.ext.dependencies["logging-interceptor"]
+    //黄油刀
+    annotationProcessor rootProject.ext.dependencies["butterknife_compiler"]
+    api rootProject.ext.dependencies["butterknife"]
+
+    //banner轮播图
+    api rootProject.ext.dependencies["banner"]
+    //RecyclerView万能适配器
+    api rootProject.ext.dependencies["baseRecyclerViewAdapterHelper"]
+
+    api rootProject.ext.dependencies["viewmodel"]
+    api rootProject.ext.dependencies["livedata"]
+    api rootProject.ext.dependencies["extensions"]
+    api rootProject.ext.dependencies["timber"]
+    api rootProject.ext.dependencies["androideventbus"]
+
+    api rootProject.ext.dependencies["rxlifecycle2"]
+    api rootProject.ext.dependencies["rxlifecycle2-android"]
+    api rootProject.ext.dependencies["rxlifecycle2-components"]
+    api rootProject.ext.dependencies["rxcache2"]
+    api rootProject.ext.dependencies["rxerrorhandler2"]
+
+    api(rootProject.ext.dependencies["glide"]) {
+        exclude module: 'support-v4'
+    }
+    annotationProcessor(rootProject.ext.dependencies["glide-compiler"]) {
+        exclude module: 'jsr305'
+    }
+    implementation(rootProject.ext.dependencies["rxcache-jolyglot-gson"]) {
+        exclude module: 'gson'
+    }
 }

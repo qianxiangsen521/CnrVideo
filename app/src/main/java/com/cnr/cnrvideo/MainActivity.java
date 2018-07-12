@@ -1,49 +1,56 @@
 package com.cnr.cnrvideo;
 
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 
-import com.cnr.basemodule.activity.BaseActivity;
+import com.cnr.basemodule.base.BaseActivity;
+import com.cnr.basemodule.di.component.AppComponent;
+import com.cnr.cnrvideo.di.component.DaggerUserComponent;
+import com.cnr.cnrvideo.di.module.HttpModule;
+import com.cnr.cnrvideo.mvp.contract.HttpContract;
+import com.cnr.cnrvideo.mvp.presenter.HttpPresenter;
 import com.cnr.coremodule.widget.media.AndroidMediaController;
 import com.cnr.coremodule.widget.media.IjkVideoView;
 
+
+import butterknife.BindView;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity<HttpPresenter> implements HttpContract.View{
     private boolean mBackPressed;
-    private IjkVideoView mVideoView;
     private String mVideoPath = "http://117.139.20.20:6410/28000001/00000000000700000000000011176389";
-    private AndroidMediaController mMediaController;
+    AndroidMediaController mMediaController;
+    @BindView(R.id.ijkVideoView)
+    IjkVideoView mVideoView;
     @Override
-    protected int getLayout() {
+    public void setupActivityComponent(@NonNull AppComponent appComponent) {
+        DaggerUserComponent.builder().appComponent(appComponent)
+                .httpModule(new HttpModule(this))
+                .build().inject(this);
+
+    }
+
+
+
+    @Override
+    public int initView(@Nullable Bundle savedInstanceState) {
         return R.layout.activity_main;
     }
 
     @Override
-    protected void initEventAndData(Bundle savedInstanceState) {
-        initView();
-    }
-
-    private void initView() {
+    public void initData(@Nullable Bundle savedInstanceState) {
         getSupportActionBar().hide();
-        mMediaController = new AndroidMediaController(this);
         // init player
+        mMediaController = new AndroidMediaController(this);
         IjkMediaPlayer.loadLibrariesOnce(null);
         IjkMediaPlayer.native_profileBegin("libijkplayer.so");
-        mVideoView = findViewById(R.id.ijkVideoView);
         mVideoView.setMediaController(mMediaController);
         mVideoView.setVideoPath(mVideoPath);
         mVideoView.start();
     }
 
-    @Override
-    protected void requestData() {
-
-    }
-
-    @Override
     public void onBackPressed() {
         mBackPressed = true;
 
@@ -60,7 +67,18 @@ public class MainActivity extends BaseActivity {
         IjkMediaPlayer.native_profileEnd();
     }
 
+    @Override
+    public void startLoadMore() {
 
+    }
 
+    @Override
+    public void endLoadMore() {
 
+    }
+
+    @Override
+    public void showMessage(@NonNull String message) {
+
+    }
 }
