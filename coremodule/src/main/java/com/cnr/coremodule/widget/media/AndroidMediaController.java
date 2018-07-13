@@ -36,6 +36,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.Slide;
 import android.transition.TransitionManager;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -736,14 +738,33 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
                             setProgress();
                         }
                     }
-                    ijkVideoView.toggleMediaControlsVisiblity();
                     break;
             }
+            gestureDetector.onTouchEvent(event);
             return isLocked;
 
         }
         return false;
     }
+    /**
+     * 双击
+     */
+    protected GestureDetector gestureDetector = new GestureDetector(activity,
+            new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onDoubleTap(MotionEvent e) {
+                    doPauseResume();
+                    return super.onDoubleTap(e);
+                }
+
+                @Override
+                public boolean onSingleTapConfirmed(MotionEvent e) {
+                    ijkVideoView.toggleMediaControlsVisiblity();
+                    return super.onSingleTapConfirmed(e);
+                }
+            });
+
+
 
     @SuppressLint("DefaultLocale")
     public void showBrightnessDialog(int brightnessPercent) {
