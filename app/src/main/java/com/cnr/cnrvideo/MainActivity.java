@@ -1,12 +1,24 @@
 package com.cnr.cnrvideo;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.cnr.basemodule.base.BaseActivity;
 import com.cnr.basemodule.di.component.AppComponent;
+import com.cnr.cnrvideo.bean.PlaySource;
+import com.cnr.cnrvideo.cnrfragment.PlaySourceFragment;
 import com.cnr.cnrvideo.di.component.DaggerUserComponent;
 import com.cnr.cnrvideo.di.module.HttpModule;
 import com.cnr.cnrvideo.mvp.contract.HttpContract;
@@ -16,14 +28,26 @@ import com.cnr.coremodule.widget.media.IjkVideoView;
 
 
 import butterknife.BindView;
+import butterknife.OnClick;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
-public class MainActivity extends BaseActivity<HttpPresenter> implements HttpContract.View{
+
+public class MainActivity extends BaseActivity<HttpPresenter> implements
+        HttpContract.View,PlaySourceFragment.OnSelectSourceListener {
     private boolean mBackPressed;
     private String mVideoPath = "http://117.139.20.20:6410/28000001/00000000000700000000000011176389";
     AndroidMediaController mMediaController;
     @BindView(R.id.ijkVideoView)
     IjkVideoView mVideoView;
+    @BindView(R.id.player_source)
+    ImageView player_source;
+    private Fragment playSourceFragment;
+    private FragmentManager fragmentManager;
+
+    private int mFragCurrentIndex;
+
+    public static final int FRAGMENT_PLAY_SOURCE = 1;
+
     @Override
     public void setupActivityComponent(@NonNull AppComponent appComponent) {
         DaggerUserComponent.builder().appComponent(appComponent)
@@ -47,6 +71,13 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements HttpCon
         mVideoView.setMediaController(mMediaController);
         mVideoView.setVideoPath(mVideoPath);
         mVideoView.start();
+
+    }
+
+    @OnClick(R.id.player_source)
+    public void sOnClick(View view){
+        mMediaController.showFragment();
+        switchFragment(FRAGMENT_PLAY_SOURCE);
     }
 
     public void onBackPressed() {
@@ -79,5 +110,86 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements HttpCon
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         mMediaController.setOrientation();
         return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * fragment切换
+     *
+     * @param index
+     */
+    private void switchFragment(int index) {
+        if (fragmentManager == null) {
+            fragmentManager = getSupportFragmentManager();
+        }
+        Fragment fragmentNow = fragmentManager.findFragmentByTag("player"
+                + mFragCurrentIndex);
+        if (fragmentNow != null) {
+            fragmentManager.beginTransaction().hide(fragmentNow).commit();
+        }
+        Fragment fragment = fragmentManager.findFragmentByTag("player" + index);
+        if (fragment == null) {
+            fragment = createMainFragment(index);
+            fragmentManager
+                    .beginTransaction()
+                    .add(R.id.player_contorl_source_prog, fragment,
+                            "player" + index).commit();
+        } else {
+            fragmentManager.beginTransaction().show(fragment).commit();
+        }
+        mFragCurrentIndex = index;
+    }
+
+
+    /**
+     * @param index
+     */
+    public Fragment createMainFragment(int index) {
+        Fragment fragment = null;
+        switch (index) {
+
+            case FRAGMENT_PLAY_SOURCE:
+                playSourceFragment = new PlaySourceFragment();
+                ((PlaySourceFragment) playSourceFragment)
+                        .setOnSelectSourceListener(this);
+                fragment = playSourceFragment;
+                break;
+//            case FRAGMENT_CHANNEL:
+//                channelListFragment = new ChannelListFragment();
+//                ((ChannelListFragment) channelListFragment)
+//                        .setSelectedListener(this);
+//                fragment = channelListFragment;
+//
+//                break;
+//            case FRAGMENT_DLNA:
+//                dlnaFragment = new DLNAFragment();
+//                ((DLNAFragment) dlnaFragment).setOnDlnaSelectedListener(this);
+//                fragment = dlnaFragment;
+//
+//                break;
+//            case FRAGMENT_FEEDBACK:
+//                feedBackFragment = new FeedBackFragment();
+//                ((FeedBackFragment) feedBackFragment)
+//                        .setSubmitFeedbackListener(this);
+//                fragment = feedBackFragment;
+//                break;
+//            case FRAGMENT_PROGAM:
+//                progamListFragment = new WeekProgamListFragment();
+//                ((WeekProgamListFragment) progamListFragment)
+//                        .setDayProgamSelectedListener(this);
+//                fragment = progamListFragment;
+//                break;
+//            case FRAGMENT_SHOT_SHARE:
+//                screenShotFragment = new ScreenShotFragment();
+//                fragment = screenShotFragment;
+//                break;
+            default:
+                break;
+        }
+        return fragment;
+    }
+
+    @Override
+    public void onSelectSource(PlaySource playSource, int selectedIndex) {
+
     }
 }

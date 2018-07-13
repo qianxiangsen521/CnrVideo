@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">CnrVideo</string>
+    <string name="player_reload">重新载入</string>
+    <string name="player_clear_cache">清除缓存</string>
 </resources>

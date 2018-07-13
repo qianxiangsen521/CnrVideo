@@ -28,6 +28,8 @@
             layout="@layout/vvc_media_controller"></include>
 
         <include layout="@layout/media_controller"></include>
+
+        <include layout="@layout/media_controller_right"></include>
     </FrameLayout>
 
     <android.support.v7.widget.RecyclerView

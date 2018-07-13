@@ -31,6 +31,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.Slide;
 import android.transition.TransitionManager;
@@ -68,7 +70,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     private MediaPlayerControl mPlayer;
     private boolean mShowing;
     private boolean mDragging;
-    private static final int sDefaultTimeout = 3000;
+    private static final int sDefaultTimeout = 5000;
     private static final int FADE_OUT = 1;
     private static final int SHOW_PROGRESS = 2;
     private static final int LOCKIMG_FADE_OUT_INFO = 3;
@@ -92,6 +94,11 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     private Animation bottomAnimation;
 
     private Animation bottomEnterAnimation;
+
+    private Animation rightToLeftAnimation;
+
+    private Animation rightEnterToLeftAnimation;
+
 
     protected float mDownX;
     protected float mDownY;
@@ -125,9 +132,12 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     protected TextView videoCurrentTime;
     protected ImageView batteryLevel;
 
+    private ConstraintLayout root_player_contorl;
+
+    private ImageView player_source;
+
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm");
 
-    private ImageView mPlaySourceImg;
     public AndroidMediaController(Context mContext) {
         initView(mContext);
     }
@@ -144,10 +154,13 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         mEndTime = activity.findViewById(R.id.time);
         mCurrentTime = activity.findViewById(R.id.time_current);
         mPauseButton = activity.findViewById(R.id.player_play_img);
+        root_player_contorl = activity.findViewById(R.id.root_player_contorl);
         if (mPauseButton != null) {
             mPauseButton.requestFocus();
             mPauseButton.setOnClickListener(mPauseListener);
         }
+
+
 
         mFormatBuilder = new StringBuilder();
         mFormatter = new Formatter(mFormatBuilder, Locale.getDefault());
@@ -178,6 +191,12 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
                 R.anim.player_translate_bottom);
         bottomEnterAnimation = AnimationUtils.loadAnimation(activity,
                 R.anim.player_translate_bottom_enter);
+        rightToLeftAnimation = AnimationUtils.loadAnimation(activity,
+                R.anim.player_translate_right_to_left);
+
+        rightEnterToLeftAnimation = AnimationUtils.loadAnimation(activity,
+                R.anim.player_translate_right_to_left_enter);
+
         main_player_layout.setOnTouchListener(this);
 
         mScreenWidth = activity.getResources().getDisplayMetrics().widthPixels;
@@ -185,9 +204,16 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         mAudioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
         videoCurrentTime = activity.findViewById(R.id.video_current_time);
         batteryLevel = activity.findViewById(R.id.battery_level);
-        mPlaySourceImg = activity. findViewById(R.id.player_source);
+        player_source = activity.findViewById(R.id.player_source);
         setSystemTimeAndBattery();
     }
+
+    public void showFragment(){
+        hide();
+        startAnimation(root_player_contorl,rightToLeftAnimation,View.VISIBLE);
+    }
+
+
 
     private BroadcastReceiver battertReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -250,11 +276,6 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     public void hide() {
         if (mShowing) {
             mHandler.removeMessages(SHOW_PROGRESS);
-
-//            setSlide(player_contorl_top_layout, View.GONE, Gravity.TOP);
-//            setSlide(player_contorl_bottom_layout, View.GONE, Gravity.BOTTOM);
-
-
             startAnimation(player_contorl_top_layout, topAnimation, View.GONE);
             startAnimation(player_contorl_bottom_layout, bottomAnimation, View.GONE);
 
@@ -268,7 +289,8 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         }
     }
 
-    private void startAnimation(ConstraintLayout linearLayout, Animation animation, int finalState) {
+    public void startAnimation(ConstraintLayout linearLayout, Animation animation, int finalState) {
+//        int isVis = linearLayout.getVisibility() == finalState ? View.GONE : View.VISIBLE;
         linearLayout.startAnimation(animation);
         linearLayout.setVisibility(finalState);
     }
@@ -276,14 +298,14 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     @Override
     public void show(int timeout) {
         if (!mShowing) {
-
+            if (root_player_contorl.getVisibility() != View.GONE){
+                startAnimation(root_player_contorl,rightEnterToLeftAnimation,View.GONE);
+            }
             setProgress();
             if (mPauseButton != null) {
                 mPauseButton.requestFocus();
             }
             disableUnsupportedButtons();
-//            setSlide(player_contorl_top_layout, View.VISIBLE, Gravity.TOP);
-//            setSlide(player_contorl_bottom_layout, View.VISIBLE, Gravity.BOTTOM);
             startAnimation(player_contorl_bottom_layout, bottomEnterAnimation, View.VISIBLE);
             startAnimation(player_contorl_top_layout, topEnterAnimation, View.VISIBLE);
 
@@ -363,7 +385,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     }
 
 
-    private void setSlide(ConstraintLayout linearLayout, int finalState, int type) {
+    public void setSlide(ConstraintLayout linearLayout, int finalState, int type) {
         if (Build.VERSION.SDK_INT < 21) {
             linearLayout.setVisibility(finalState);
         } else {
@@ -555,6 +577,8 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     };
 
     public void setSmallScreen() {
+        isVisible(player_source);
+        isVisible(mLockImg);
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
         attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
@@ -563,12 +587,16 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         mMainLayout.getLayoutParams().height = activity.getWindowManager().getDefaultDisplay().getWidth() * 9 / 16;
         mMainLayout.getLayoutParams().width = FrameLayout.LayoutParams.MATCH_PARENT;
         ijkVideoView.toggleAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
+
     }
+
 
     /**
      * 设置全屏
      */
     public void setFullScreen() {
+        isVisible(player_source);
+        isVisible(mLockImg);
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
         attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
@@ -577,6 +605,11 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         mMainLayout.getLayoutParams().height = FrameLayout.LayoutParams.MATCH_PARENT;
         mMainLayout.getLayoutParams().width = FrameLayout.LayoutParams.MATCH_PARENT;
         ijkVideoView.toggleAspectRatio(IRenderView.AR_ASPECT_FILL_PARENT);
+
+    }
+    private void isVisible(View view){
+        int isVis = view.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;
+        view.setVisibility(isVis);
     }
 
     public boolean orientation() {
@@ -711,6 +744,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         }
         return false;
     }
+
     @SuppressLint("DefaultLocale")
     public void showBrightnessDialog(int brightnessPercent) {
         if (mBrightnessDialog == null) {
