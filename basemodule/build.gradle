@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
-    buildToolsVersion rootProject.ext.android.buildToolsVersion
     defaultConfig {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
@@ -31,6 +30,7 @@ android {
         cruncherEnabled = false
         useNewCruncher = false
     }
+    buildToolsVersion '27.0.3'
 }
 
 dependencies {
@@ -79,7 +79,7 @@ dependencies {
     api rootProject.ext.dependencies["rxlifecycle2-components"]
     api rootProject.ext.dependencies["rxcache2"]
     api rootProject.ext.dependencies["rxerrorhandler2"]
-
+    api rootProject.ext.dependencies["easypermissions"]
     api(rootProject.ext.dependencies["glide"]) {
         exclude module: 'support-v4'
     }

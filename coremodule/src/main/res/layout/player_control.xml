@@ -3,11 +3,12 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/player_contorl_top_layout"
     android:layout_width="match_parent"
     android:layout_height="?android:attr/actionBarSize"
-    android:background="@mipmap/player_bar_top">
-
+    android:background="@mipmap/player_bar_top"
+    >
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/player_control_backlayout_ConstraintLayout"
@@ -19,34 +20,93 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         >
+
+        <ImageView
+            android:id="@+id/player_control_backlayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="@dimen/dp_8"
+            android:contentDescription="@null"
+            android:src="@drawable/player_land_ctrl_back"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/program_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            app:layout_constraintStart_toEndOf="@+id/player_control_backlayout"
+            android:text="精绝古城"
+            android:layout_marginStart="@dimen/dp_8"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+    </android.support.constraint.ConstraintLayout>
+
     <ImageView
-        android:id="@+id/player_control_backlayout"
+        android:id="@+id/player_feedback_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
         android:contentDescription="@null"
-        android:src="@drawable/player_land_ctrl_back"
+        android:src="@mipmap/bt_player_feedback_nor"
+
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/player_collect_img"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/program_name"
+    <ImageView
+        android:id="@+id/player_collect_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
-        android:gravity="center_vertical"
-        android:maxLines="1"
-        android:textColor="@color/white"
-        android:textSize="15sp"
-        android:text="精绝古城"
+        android:contentDescription="@null"
+        android:src="@mipmap/bt_player_fav_unsel"
+
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/player_control_backlayout"
+        app:layout_constraintEnd_toStartOf="@+id/player_scale_img"
         app:layout_constraintTop_toTopOf="parent" />
-    </android.support.constraint.ConstraintLayout>
+    <ImageView
+        android:id="@+id/player_scale_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@null"
+        android:src="@mipmap/bt_player_scale_full_unsel"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/player_share_img"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/player_share_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@null"
+        android:src="@mipmap/bt_player_share_unsel"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/battery_level"
+        app:layout_constraintTop_toTopOf="parent" />
     <ImageView
         android:id="@+id/battery_level"
         android:layout_width="wrap_content"
@@ -57,7 +117,8 @@
         android:background="@mipmap/jz_battery_level_10"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
     <TextView
         android:id="@+id/video_current_time"
@@ -76,7 +137,4 @@
         app:layout_constraintTop_toBottomOf="@+id/battery_level" />
 
 
-
 </android.support.constraint.ConstraintLayout>
-
-

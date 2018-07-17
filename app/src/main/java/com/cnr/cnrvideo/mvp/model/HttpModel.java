@@ -21,11 +21,11 @@ import android.arch.lifecycle.OnLifecycleEvent;
 
 import com.cnr.basemodule.integration.IRepositoryManager;
 import com.cnr.basemodule.mvp.BaseModel;
+import com.cnr.basemodule.utils.ProgressObserver;
 import com.cnr.cnrvideo.fragment.Webservice;
-import com.cnr.cnrvideo.fragment.entity.BaseResponse;
-import com.cnr.cnrvideo.fragment.entity.User;
-import com.cnr.cnrvideo.fragment.response.VideoListResponse;
 import com.cnr.cnrvideo.mvp.contract.HttpContract;
+import com.cnr.cnrvideo.response.BaseResponse;
+import com.cnr.cnrvideo.response.PlayInfoResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -36,6 +36,7 @@ import javax.inject.Inject;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 import timber.log.Timber;
@@ -56,21 +57,23 @@ public class HttpModel extends BaseModel implements HttpContract.Model{
 //        doRequest(videoListResponse,observer);
 //    }
 //
-//    private void doRequest(Observable<? extends BaseResponse> observable, Observer subscriber) {
-//        Observable<? extends BaseResponse> observable1 =
-//                observable
-//                        .subscribeOn(Schedulers.io())
-//                        .unsubscribeOn(Schedulers.io())
-//                        .observeOn(AndroidSchedulers.mainThread());
-//        observable1.subscribe(subscriber);
-//    }
+    private void doRequest(Observable<? extends BaseResponse> observable, Observer subscriber) {
+        Observable<? extends BaseResponse> observable1 =
+                observable
+                        .subscribeOn(Schedulers.io())
+                        .unsubscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread());
+        observable1.subscribe(subscriber);
+    }
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     void onPause() {
         Timber.d("Release Resource");
     }
 
     @Override
-    public Observable<List<User>> getUsers(int lastIdQueried, boolean update) {
-        return null;
+    public void getPlayInfoResponse(Map<String, String> map, ProgressObserver observer) {
+        Observable<PlayInfoResponse> videoListResponse = mRepositoryManager.
+                obtainRetrofitService(Webservice.class).getPlayInfoResponse(map);
+        doRequest(videoListResponse, observer);
     }
 }

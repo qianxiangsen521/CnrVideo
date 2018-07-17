@@ -15,6 +15,15 @@
  */
 package com.cnr.cnrvideo.mvp.model.api;
 
+import com.cnr.cnrvideo.response.PlayInfoResponse;
+
+import java.util.Map;
+
+import io.reactivex.Observable;
+import retrofit2.http.FieldMap;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
+
 /**
  * ================================================
  * 存放一些与 API 有关的东西,如请求地址,请求码等
@@ -25,7 +34,16 @@ package com.cnr.cnrvideo.mvp.model.api;
  * ================================================
  */
 public interface Api {
-    public static boolean IS_RELEASE = false;
-    public static String BASE_URL = IS_RELEASE ? "http://api.tea.cnrmobile.com/" : "http://api.tea.test.cnrmobile.com/";
+    public static boolean PUBLISH_MODE = false;
+
+    public static String BASE_TEST_URL = "http://api.tv.test.cnrmobile.com/";
+
+    public static String BASE_ON_LINE_URL = "http://api.tv.cnrmobile.com/";
+
+    public static String getBaseUrl() {
+        return PUBLISH_MODE ? BASE_ON_LINE_URL : BASE_TEST_URL;
+    }
+
+
 
 }

@@ -62,6 +62,8 @@ import java.util.Locale;
 
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+
 public class AndroidMediaController  implements IMediaController,View.OnTouchListener {
 
     private AppCompatActivity activity;
@@ -70,7 +72,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     private ConstraintLayout player_control_backlayout_ConstraintLayout;
     private ConstraintLayout root_controller;
     private MediaPlayerControl mPlayer;
-    private boolean mShowing;
+    private boolean mShowing = true;
     private boolean mDragging;
     private static final int sDefaultTimeout = 5000;
     private static final int FADE_OUT = 1;
@@ -133,10 +135,16 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     private boolean brocasting = false;
     protected TextView videoCurrentTime;
     protected ImageView batteryLevel;
+    private ImageView player_next_img;
 
     private ConstraintLayout root_player_contorl;
+    private ConstraintLayout player_contorl_right_bt;
+    private ImageView player_contorl_dlna;
 
     private ImageView player_source;
+    private ImageView player_share_img;
+    private ImageView player_scale_img;
+
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm");
 
@@ -157,6 +165,11 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         mCurrentTime = activity.findViewById(R.id.time_current);
         mPauseButton = activity.findViewById(R.id.player_play_img);
         root_player_contorl = activity.findViewById(R.id.root_player_contorl);
+        player_contorl_right_bt = activity.findViewById(R.id.player_contorl_right_bt);
+        player_contorl_dlna = activity.findViewById(R.id.player_contorl_dlna);
+        player_next_img = activity.findViewById(R.id.player_next_img);
+        player_share_img =activity.findViewById(R.id.player_share_img);
+        player_scale_img =activity.findViewById(R.id.player_scale_img);
         if (mPauseButton != null) {
             mPauseButton.requestFocus();
             mPauseButton.setOnClickListener(mPauseListener);
@@ -168,6 +181,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         mFormatter = new Formatter(mFormatBuilder, Locale.getDefault());
 
         mProgress = activity.findViewById(R.id.mediacontroller_progress);
+
         if (mProgress != null) {
             if (mProgress instanceof SeekBar) {
                 SeekBar seeker = (SeekBar) mProgress;
@@ -208,6 +222,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         batteryLevel = activity.findViewById(R.id.battery_level);
         player_source = activity.findViewById(R.id.player_source);
         setSystemTimeAndBattery();
+
     }
 
     public void showFragment(){
@@ -260,18 +275,24 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     private void lockAndUnlock() {
         if (isLocked) {
             //锁
-            isLocked = false;
-            mLockImg.setImageResource(R.mipmap.player_unlock);
-            hide();
-            mHandler.sendEmptyMessageDelayed(LOCKIMG_FADE_OUT_INFO,
-                    sDefaultTimeout);
+            unlock();
         } else {
             //解
-            isLocked = true;
-            mLockImg.setImageResource(R.mipmap.player_locked);
-            show();
-            mHandler.removeMessages(LOCKIMG_FADE_OUT_INFO);
+            locked();
         }
+    }
+    public void unlock(){
+        isLocked = false;
+        mLockImg.setImageResource(R.mipmap.player_unlock);
+        hide();
+        mHandler.sendEmptyMessageDelayed(LOCKIMG_FADE_OUT_INFO,
+                sDefaultTimeout);
+    }
+    public void locked(){
+        isLocked = true;
+        mLockImg.setImageResource(R.mipmap.player_locked);
+        show();
+        mHandler.removeMessages(LOCKIMG_FADE_OUT_INFO);
     }
 
     @Override
@@ -282,6 +303,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             startAnimation(player_contorl_bottom_layout, bottomAnimation, View.GONE);
 
             if (orientation()) {
+                startAnimation(player_contorl_right_bt,rightEnterToLeftAnimation,View.GONE);
                 if (isLocked) {
                     setSlide(root_controller, View.GONE, Gravity.LEFT);
                 }
@@ -308,11 +330,13 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
                 mPauseButton.requestFocus();
             }
             disableUnsupportedButtons();
+
             startAnimation(player_contorl_bottom_layout, bottomEnterAnimation, View.VISIBLE);
             startAnimation(player_contorl_top_layout, topEnterAnimation, View.VISIBLE);
 
             //锁屏幕
             if (orientation()) {
+                setSlide(player_contorl_right_bt,View.VISIBLE, Gravity.RIGHT);
                 if (mLockImg != null) {
                     setSlide(root_controller, View.VISIBLE, Gravity.LEFT);
                 }
@@ -330,6 +354,32 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         }
         setSystemTimeAndBattery();
     }
+
+
+    private void hideNavigationBar() {
+        View decorView = activity.getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                |View. SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                |View.SYSTEM_UI_FLAG_FULLSCREEN
+                |View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        |View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
+    }
+
+    private void showNavigationBar() {
+        View decorView = activity.getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+             |  View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                |View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        |View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
+    }
+
 
     @Override
     public boolean isShowing() {
@@ -349,6 +399,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         if (mProgress != null) {
             mProgress.setEnabled(enabled);
         }
+
         disableUnsupportedButtons();
     }
 
@@ -431,7 +482,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         }
         int position = mPlayer.getCurrentPosition();
         int duration = mPlayer.getDuration();
-        if (mProgress != null) {
+        if (mProgress != null ) {
             if (duration > 0) {
                 // use long to avoid overflow
                 long pos = 1000L * position / duration;
@@ -579,17 +630,15 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     };
 
     public void setSmallScreen() {
-        isVisible(player_source);
-        isVisible(mLockImg);
+        setVisible(View.GONE);
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
         attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
         activity.getWindow().setAttributes(attrs);
-        activity.getWindow().getDecorView().setSystemUiVisibility(View.VISIBLE);
         mMainLayout.getLayoutParams().height = activity.getWindowManager().getDefaultDisplay().getWidth() * 9 / 16;
         mMainLayout.getLayoutParams().width = FrameLayout.LayoutParams.MATCH_PARENT;
         ijkVideoView.toggleAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
-
+        activity.getWindow().getDecorView().setSystemUiVisibility(View.VISIBLE);
     }
 
 
@@ -597,20 +646,30 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
      * 设置全屏
      */
     public void setFullScreen() {
-        isVisible(player_source);
-        isVisible(mLockImg);
+        setVisible(View.VISIBLE);
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
         attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
         activity.getWindow().setAttributes(attrs);
-        activity.getWindow().getDecorView().setSystemUiVisibility(View.INVISIBLE);
         mMainLayout.getLayoutParams().height = FrameLayout.LayoutParams.MATCH_PARENT;
         mMainLayout.getLayoutParams().width = FrameLayout.LayoutParams.MATCH_PARENT;
         ijkVideoView.toggleAspectRatio(IRenderView.AR_ASPECT_FILL_PARENT);
 
+        hideNavigationBar();
     }
-    private void isVisible(View view){
-        int isVis = view.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;
+
+    private void setVisible(int isVis){
+        isVisible(player_source,isVis);
+        isVisible(mLockImg,isVis);
+        isVisible(player_contorl_right_bt,isVis);
+        isVisible(player_next_img,isVis);
+        isVisible(player_contorl_dlna,isVis);
+        isVisible(player_share_img,isVis);
+        isVisible(player_scale_img,isVis);
+    }
+
+    private void isVisible(View view,int isVis){
+//        int isVis = view.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;
         view.setVisibility(isVis);
     }
 

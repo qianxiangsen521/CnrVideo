@@ -20,6 +20,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 
 import com.cnr.basemodule.base.delegate.AppLifecycles;
 import com.cnr.basemodule.di.module.GlobalConfigModule;
@@ -29,6 +30,9 @@ import com.cnr.cnrvideo.mvp.model.api.Api;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import okhttp3.logging.HttpLoggingInterceptor;
+import timber.log.Timber;
 
 
 /**
@@ -47,9 +51,18 @@ public final class GlobalConfiguration implements ConfigModule {
 
     @Override
     public void applyOptions(Context context, GlobalConfigModule.Builder builder) {
-            builder.printHttpLogLevel(RequestInterceptor.Level.NONE);
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(String message) {
+//                Timber.tag("TAGTAG").d(message);
 
-        builder.baseurl(Api.BASE_URL)
+                Log.d("TAGTAG", "log: "+message);
+            }
+        });
+            builder.printHttpLogLevel(RequestInterceptor.Level.NONE);
+        builder.addInterceptor(new CommonIntercepter());
+        builder.addInterceptor(interceptor);
+        builder.baseurl(Api.getBaseUrl())
                 //强烈建议自己自定义图片加载逻辑,因为默认提供的 GlideImageLoaderStrategy 并不能满足复杂的需求
                 //请参考 https://github.com/JessYanCoding/MVPArms/wiki#3.4
 //                .imageLoaderStrategy(new CustomLoaderStrategy())

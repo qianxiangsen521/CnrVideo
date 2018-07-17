@@ -38,6 +38,10 @@ import com.cnr.basemodule.utils.Preconditions;
  */
 public class BaseApplication extends Application implements App {
     private AppLifecycles mAppDelegate;
+    private static BaseApplication mInstance;
+    public static BaseApplication getInstance() {
+        return mInstance;
+    }
 
     /**
      * 这里会在 {@link BaseApplication#onCreate} 之前被调用,可以做一些较早的初始化
@@ -45,6 +49,9 @@ public class BaseApplication extends Application implements App {
      *
      * @param base
      */
+
+
+
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -56,6 +63,7 @@ public class BaseApplication extends Application implements App {
     @Override
     public void onCreate() {
         super.onCreate();
+        mInstance = this;
         if (mAppDelegate != null)
             this.mAppDelegate.onCreate(this);
     }

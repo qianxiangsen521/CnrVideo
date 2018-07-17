@@ -8,7 +8,8 @@
     android:layout_gravity="bottom"
     android:background="@mipmap/player_bar_bottom"
     android:layoutDirection="ltr"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    >
 
     <ImageView
         android:id="@+id/player_play_img"
@@ -21,17 +22,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+    <ImageView
+        android:id="@+id/player_next_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:visibility="gone"
+        android:src="@mipmap/bt_player_next_nor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/player_play_img"
+        app:layout_constraintEnd_toStartOf="@+id/time_current"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+
     <TextView
         android:id="@+id/time_current"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="00:00"
-        android:textColor="@color/white"
         android:textSize="14sp"
+        android:textColor="@color/white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/player_play_img"
+        app:layout_constraintStart_toEndOf="@+id/player_next_img"
         app:layout_constraintTop_toTopOf="parent" />
 
 
@@ -40,19 +56,18 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
         android:focusable="true"
-        android:maxHeight="@dimen/default_tiny_margin"
-        android:minHeight="@dimen/default_tiny_margin"
+        android:max="1000"
+        android:maxHeight="1dip"
+        android:minHeight="1dip"
+        app:layout_constraintEnd_toStartOf="@+id/time"
+        app:layout_constraintStart_toEndOf="@+id/time_current"
         android:progressDrawable="@drawable/seek_drawable"
         android:thumb="@drawable/video_seek_thumb"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/time"
-        app:layout_constraintStart_toEndOf="@+id/time_current"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
-    <!--app:previewFrameLayout="@id/previewFrameLayout"-->
     <TextView
         android:id="@+id/time"
         android:layout_width="wrap_content"
@@ -61,14 +76,28 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         android:text="00:00"
-
         android:textColor="@color/white"
         android:textSize="14sp"
         android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/player_contorl_dlna"
+        app:layout_constraintStart_toEndOf="@+id/mediacontroller_progress"
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        app:layout_constraintTop_toTopOf="parent"
+        />
+    <ImageView
+        android:id="@+id/player_contorl_dlna"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@null"
+        android:visibility="gone"
+        android:src="@mipmap/bt_player_push_unsel"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/player_source"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <ImageView
         android:id="@+id/player_source"
@@ -83,7 +112,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/is_full_screen"
         app:layout_constraintTop_toTopOf="parent" />
-`
+    `
 
     <ImageView
         android:id="@+id/is_full_screen"
@@ -97,5 +126,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 
 </android.support.constraint.ConstraintLayout>

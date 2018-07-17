@@ -10,6 +10,8 @@ import android.support.v4.app.FragmentManager;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
@@ -51,7 +53,7 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements
     @Override
     public void setupActivityComponent(@NonNull AppComponent appComponent) {
         DaggerUserComponent.builder().appComponent(appComponent)
-                .httpModule(new HttpModule(this))
+                .httpModule(new HttpModule(this,this))
                 .build().inject(this);
 
     }
@@ -108,7 +110,12 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        mMediaController.setOrientation();
+        if (mMediaController.isLocked()){
+            mMediaController.setOrientation();
+        }else{
+            mMediaController.locked();
+            mMediaController.setOrientation();
+        }
         return super.onKeyDown(keyCode, event);
     }
 

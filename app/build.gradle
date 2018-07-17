@@ -34,4 +34,5 @@ dependencies {
     annotationProcessor rootProject.ext.dependencies["dagger-compiler"]
     implementation project(':coremodule')
     implementation project(':basemodule')
+
 }

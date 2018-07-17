@@ -15,19 +15,11 @@
  */
 package com.cnr.cnrvideo.mvp.contract;
 
-import android.app.Activity;
-
 import com.cnr.basemodule.mvp.IModel;
 import com.cnr.basemodule.mvp.IView;
-import com.cnr.cnrvideo.fragment.entity.BaseResponse;
-import com.cnr.cnrvideo.fragment.entity.User;
-import com.cnr.cnrvideo.fragment.response.VideoListResponse;
+import com.cnr.basemodule.utils.ProgressObserver;
 
-import java.util.List;
 import java.util.Map;
-
-import io.reactivex.Observable;
-import io.reactivex.Observer;
 
 /**
  * ================================================
@@ -47,6 +39,6 @@ public interface HttpContract {
     }
     //Model层定义接口,外部只需关心Model返回的数据,无需关心内部细节,如是否使用缓存
     interface Model extends IModel{
-        Observable<List<User>> getUsers(int lastIdQueried, boolean update);
+        void getPlayInfoResponse(Map<String,String> map, ProgressObserver observer);
     }
 }
