@@ -20,13 +20,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'armeabi-v7a'
+            universalApk true
+        }
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     compile 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
     compile 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
+    compile 'tv.danmaku.ijk.media:ijkplayer-x86:0.8.8'
     implementation project(':basemodule')
     annotationProcessor rootProject.ext.dependencies["butterknife_compiler"]
 }

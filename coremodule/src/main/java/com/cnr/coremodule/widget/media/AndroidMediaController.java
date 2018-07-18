@@ -222,7 +222,6 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         batteryLevel = activity.findViewById(R.id.battery_level);
         player_source = activity.findViewById(R.id.player_source);
         setSystemTimeAndBattery();
-
     }
 
     public void showFragment(){
@@ -363,7 +362,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
                 |View. SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 |View.SYSTEM_UI_FLAG_FULLSCREEN
-                |View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         |View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
     }
@@ -373,13 +372,12 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-             |  View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+             | View. SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                |View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         |View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
     }
-
 
     @Override
     public boolean isShowing() {
@@ -630,32 +628,31 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     };
 
     public void setSmallScreen() {
+        activity.getWindow().getDecorView().setSystemUiVisibility(View.VISIBLE);
         setVisible(View.GONE);
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
         attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
         activity.getWindow().setAttributes(attrs);
-        mMainLayout.getLayoutParams().height = activity.getWindowManager().getDefaultDisplay().getWidth() * 9 / 16;
-        mMainLayout.getLayoutParams().width = FrameLayout.LayoutParams.MATCH_PARENT;
         ijkVideoView.toggleAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
-        activity.getWindow().getDecorView().setSystemUiVisibility(View.VISIBLE);
+
     }
+
 
 
     /**
      * 设置全屏
      */
     public void setFullScreen() {
+        hideNavigationBar();
         setVisible(View.VISIBLE);
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
         attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
         activity.getWindow().setAttributes(attrs);
-        mMainLayout.getLayoutParams().height = FrameLayout.LayoutParams.MATCH_PARENT;
-        mMainLayout.getLayoutParams().width = FrameLayout.LayoutParams.MATCH_PARENT;
         ijkVideoView.toggleAspectRatio(IRenderView.AR_ASPECT_FILL_PARENT);
 
-        hideNavigationBar();
+
     }
 
     private void setVisible(int isVis){

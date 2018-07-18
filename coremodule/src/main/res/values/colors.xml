@@ -6,4 +6,5 @@
     <color name="white">#ffffff</color>
     <color name="dull_blue">#e75c55</color>
     <color name="cnr_black">#000000</color>
+    <color name="transparent">#00000000</color>
 </resources>
