@@ -1,4 +1,4 @@
-package com.cnr.cnrvideo.app;
+package com.cnr.basemodule.utils;
 
 
 
@@ -20,7 +20,7 @@ import okhttp3.Response;
  * OKHttp拦截器用来添加公共参数
  */
 
-class CommonIntercepter implements Interceptor {
+public class CommonIntercepter implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {

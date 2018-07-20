@@ -63,9 +63,8 @@ public class AppDelegate implements App, AppLifecycles {
     @Inject
     @Named("ActivityLifecycle")
     protected Application.ActivityLifecycleCallbacks mActivityLifecycle;
-    @Inject
-    @Named("ActivityLifecycleForRxLifecycle")
-    protected Application.ActivityLifecycleCallbacks mActivityLifecycleForRxLifecycle;
+
+
     private List<ConfigModule> mModules;
     private List<AppLifecycles> mAppLifecycles = new ArrayList<>();
     private List<Application.ActivityLifecycleCallbacks> mActivityLifecycles = new ArrayList<>();
@@ -116,9 +115,6 @@ public class AppDelegate implements App, AppLifecycles {
 
         //注册框架内部已实现的 Activity 生命周期逻辑
         mApplication.registerActivityLifecycleCallbacks(mActivityLifecycle);
-
-        //注册框架内部已实现的 RxLifecycle 逻辑
-        mApplication.registerActivityLifecycleCallbacks(mActivityLifecycleForRxLifecycle);
 
         //注册框架外部, 开发者扩展的 Activity 生命周期逻辑
         //每个 ConfigModule 的实现类可以声明多个 Activity 的生命周期回调

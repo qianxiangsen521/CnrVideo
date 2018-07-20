@@ -27,7 +27,6 @@ import android.util.Log;
 import android.view.View;
 
 import com.cnr.basemodule.utils.Preconditions;
-import com.trello.rxlifecycle2.RxLifecycle;
 
 import org.simple.eventbus.EventBus;
 

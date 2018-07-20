@@ -27,10 +27,8 @@ import android.view.ViewGroup;
 import com.cnr.basemodule.base.delegate.IFragment;
 import com.cnr.basemodule.integration.cache.Cache;
 import com.cnr.basemodule.integration.cache.CacheType;
-import com.cnr.basemodule.integration.lifecycle.FragmentLifecycleable;
 import com.cnr.basemodule.mvp.IPresenter;
 import com.cnr.basemodule.utils.ArmsUtils;
-import com.trello.rxlifecycle2.android.FragmentEvent;
 
 import javax.inject.Inject;
 
@@ -47,9 +45,8 @@ import io.reactivex.subjects.Subject;
  * <a href="https://github.com/JessYanCoding">Follow me</a>
  * ================================================
  */
-public abstract class BaseFragment<P extends IPresenter> extends Fragment implements IFragment, FragmentLifecycleable {
+public abstract class BaseFragment<P extends IPresenter> extends Fragment implements IFragment {
     protected final String TAG = this.getClass().getSimpleName();
-    private final BehaviorSubject<FragmentEvent> mLifecycleSubject = BehaviorSubject.create();
     private Cache<String, Object> mCache;
     @Inject
     @Nullable
@@ -63,14 +60,6 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
         }
         return mCache;
     }
-
-
-    @NonNull
-    @Override
-    public final Subject<FragmentEvent> provideLifecycleSubject() {
-        return mLifecycleSubject;
-    }
-
 
     @Nullable
     @Override

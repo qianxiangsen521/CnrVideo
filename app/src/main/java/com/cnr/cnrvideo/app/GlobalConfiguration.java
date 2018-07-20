@@ -51,17 +51,6 @@ public final class GlobalConfiguration implements ConfigModule {
 
     @Override
     public void applyOptions(Context context, GlobalConfigModule.Builder builder) {
-        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            @Override
-            public void log(String message) {
-//                Timber.tag("TAGTAG").d(message);
-
-                Log.d("TAGTAG", "log: "+message);
-            }
-        });
-            builder.printHttpLogLevel(RequestInterceptor.Level.NONE);
-        builder.addInterceptor(new CommonIntercepter());
-        builder.addInterceptor(interceptor);
         builder.baseurl(Api.getBaseUrl())
                 //强烈建议自己自定义图片加载逻辑,因为默认提供的 GlideImageLoaderStrategy 并不能满足复杂的需求
                 //请参考 https://github.com/JessYanCoding/MVPArms/wiki#3.4

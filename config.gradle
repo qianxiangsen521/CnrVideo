@@ -13,7 +13,6 @@ ext {
             androidSupportSdkVersion: "27.1.1",
             dagger2SdkVersion       : "2.15",
             lifecycle_version: "1.1.1",
-            rxlifecycle2SdkVersion  : "2.2.1",
             glideSdkVersion         : "4.6.1"
     ]
 
@@ -40,12 +39,6 @@ ext {
             "adapter-rxjava2"                : 'com.squareup.retrofit2:adapter-rxjava2:2.3.0',
             "rxjava2:rxandroid"              : 'io.reactivex.rxjava2:rxandroid:2.0.1',
             "rxjava2"                        : 'io.reactivex.rxjava2:rxjava:2.1.5',
-            "rxlifecycle2"                   : "com.trello.rxlifecycle2:rxlifecycle:${android["rxlifecycle2SdkVersion"]}",
-            "rxlifecycle2-android"           : "com.trello.rxlifecycle2:rxlifecycle-android:${android["rxlifecycle2SdkVersion"]}",
-            "rxlifecycle2-components"        : "com.trello.rxlifecycle2:rxlifecycle-components:${android["rxlifecycle2SdkVersion"]}",
-            "rxcache2"                       : "com.github.VictorAlbertos.RxCache:runtime:1.8.3-2.x",
-            "rxerrorhandler2"                : "me.jessyan:rxerrorhandler:2.1.1",
-            "rxcache-jolyglot-gson"          : "com.github.VictorAlbertos.Jolyglot:gson:0.0.3",
             "glide"                          : "com.github.bumptech.glide:glide:${android["glideSdkVersion"]}",
             "glide-compiler"                  : "com.github.bumptech.glide:compiler:${android["glideSdkVersion"]}",
             "glide-loader-okhttp3"              : "com.github.bumptech.glide:okhttp3-integration:${android["glideSdkVersion"]}",
@@ -61,13 +54,13 @@ ext {
                //dagger 暂时没用
             "dagger"                        : "com.google.dagger:dagger:${android["dagger2SdkVersion"]}",
             "dagger-compiler"               : "com.google.dagger:dagger-compiler:${android["dagger2SdkVersion"]}",
-            "androideventbus"          : "org.simple:androideventbus:1.0.5.1",
+            "androideventbus"               : "org.simple:androideventbus:1.0.5.1",
             "javax-annotation"              : 'org.glassfish:javax.annotation:10.0-b28',
             "viewmodel"                     : "android.arch.lifecycle:viewmodel:${android["lifecycle_version"]}",
             "livedata"                      : "android.arch.lifecycle:livedata:${android["lifecycle_version"]}",
             "extensions"                    : "android.arch.lifecycle:extensions:${android["lifecycle_version"]}",
-            "timber"                   : "com.jakewharton.timber:timber:4.7.0",
+            "timber"                        : "com.jakewharton.timber:timber:4.7.0",
 
-            "easypermissions"           : "pub.devrel:easypermissions:1.2.0",
+            "easypermissions"               : "pub.devrel:easypermissions:1.2.0",
     ]
 }

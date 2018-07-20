@@ -73,20 +73,11 @@ dependencies {
     api rootProject.ext.dependencies["extensions"]
     api rootProject.ext.dependencies["timber"]
     api rootProject.ext.dependencies["androideventbus"]
-
-    api rootProject.ext.dependencies["rxlifecycle2"]
-    api rootProject.ext.dependencies["rxlifecycle2-android"]
-    api rootProject.ext.dependencies["rxlifecycle2-components"]
-    api rootProject.ext.dependencies["rxcache2"]
-    api rootProject.ext.dependencies["rxerrorhandler2"]
     api rootProject.ext.dependencies["easypermissions"]
     api(rootProject.ext.dependencies["glide"]) {
         exclude module: 'support-v4'
     }
     annotationProcessor(rootProject.ext.dependencies["glide-compiler"]) {
         exclude module: 'jsr305'
-    }
-    implementation(rootProject.ext.dependencies["rxcache-jolyglot-gson"]) {
-        exclude module: 'gson'
     }
 }

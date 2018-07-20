@@ -18,9 +18,11 @@ package com.cnr.basemodule.di.module;
 import android.app.Application;
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.cnr.basemodule.http.GlobalHttpHandler;
 import com.cnr.basemodule.http.log.RequestInterceptor;
+import com.cnr.basemodule.utils.CommonIntercepter;
 import com.cnr.basemodule.utils.DataHelper;
 import com.google.gson.Gson;
 
@@ -36,17 +38,16 @@ import javax.inject.Singleton;
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
-import io.rx_cache2.internal.RxCache;
-import io.victoralbertos.jolyglot.GsonSpeaker;
-import me.jessyan.rxerrorhandler.core.RxErrorHandler;
-import me.jessyan.rxerrorhandler.handler.listener.ResponseErrorListener;
+
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+import timber.log.Timber;
 
 /**
  * ================================================
@@ -116,6 +117,17 @@ public abstract class ClientModule {
                     return chain.proceed(handler.onHttpRequestBefore(chain, chain.request()));
                 }
             });
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(String message) {
+                Log.d("TAGTAG", "log: " + message);
+            }
+        });
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        builder.addInterceptor(new CommonIntercepter());
+
+        builder.addInterceptor(httpLoggingInterceptor);
 
         if (interceptors != null) {//如果外部提供了interceptor的集合则遍历添加
             for (Interceptor interceptor : interceptors) {
@@ -143,57 +155,6 @@ public abstract class ClientModule {
     @Binds
     abstract Interceptor bindInterceptor(RequestInterceptor interceptor);
 
-    /**
-     * 提供 {@link RxCache}
-     *
-     * @param application
-     * @param configuration
-     * @param cacheDirectory cacheDirectory RxCache缓存路径
-     * @return {@link RxCache}
-     */
-    @Singleton
-    @Provides
-    static RxCache provideRxCache(Application application, @Nullable RxCacheConfiguration configuration, @Named("RxCacheDirectory") File cacheDirectory) {
-        RxCache.Builder builder = new RxCache.Builder();
-        RxCache rxCache = null;
-        if (configuration != null) {
-            rxCache = configuration.configRxCache(application, builder);
-        }
-        if (rxCache != null) return rxCache;
-        return builder
-                .persistence(cacheDirectory, new GsonSpeaker());
-    }
-
-    /**
-     * 需要单独给 {@link RxCache} 提供缓存路径
-     *
-     * @param cacheDir
-     * @return {@link File}
-     */
-    @Singleton
-    @Provides
-    @Named("RxCacheDirectory")
-    static File provideRxCacheDirectory(File cacheDir) {
-        File cacheDirectory = new File(cacheDir, "RxCache");
-        return DataHelper.makeDirs(cacheDirectory);
-    }
-
-    /**
-     * 提供处理 RxJava 错误的管理器
-     *
-     * @param application
-     * @param listener
-     * @return {@link RxErrorHandler}
-     */
-    @Singleton
-    @Provides
-    static RxErrorHandler proRxErrorHandler(Application application, ResponseErrorListener listener) {
-        return RxErrorHandler
-                .builder()
-                .with(application)
-                .responseErrorListener(listener)
-                .build();
-    }
 
     public interface RetrofitConfiguration {
         void configRetrofit(Context context, Retrofit.Builder builder);
@@ -203,15 +164,5 @@ public abstract class ClientModule {
         void configOkhttp(Context context, OkHttpClient.Builder builder);
     }
 
-    public interface RxCacheConfiguration {
-        /**
-         * 若想自定义 RxCache 的缓存文件夹或者解析方式, 如改成 fastjson
-         * 请 {@code return rxCacheBuilder.persistence(cacheDirectory, new FastJsonSpeaker());}, 否则请 {@code return null;}
-         *
-         * @param context
-         * @param builder
-         * @return {@link RxCache}
-         */
-        RxCache configRxCache(Context context, RxCache.Builder builder);
-    }
+
 }

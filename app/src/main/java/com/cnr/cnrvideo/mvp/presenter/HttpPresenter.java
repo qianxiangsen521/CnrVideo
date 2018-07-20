@@ -39,11 +39,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
-import me.jessyan.rxerrorhandler.core.RxErrorHandler;
-import me.jessyan.rxerrorhandler.handler.ErrorHandleSubscriber;
-import okhttp3.OkHttpClient;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -66,8 +62,6 @@ public class HttpPresenter extends BasePresenter<HttpContract.Model, HttpContrac
 
     private String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_PHONE_STATE};
-    @Inject
-    RxErrorHandler mErrorHandler;
 
     @Inject
     Activity activity;
@@ -94,7 +88,10 @@ public class HttpPresenter extends BasePresenter<HttpContract.Model, HttpContrac
     public void requestPermisstionTask() {
         //允许程序访问手机状态信息 Manifest.permission.READ_PHONE_STATE
         if (EasyPermissions.hasPermissions(activity, perms)) {
+
             Map<String,String> map = new HashMap<>();
+            map.put("playType","0");
+            map.put("playId","64");
             mModel.getPlayInfoResponse(map,new ProgressObserver(this));
 
         } else {
@@ -135,7 +132,6 @@ public class HttpPresenter extends BasePresenter<HttpContract.Model, HttpContrac
 
     @Override
     public void onNext(com.cnr.cnrvideo.response.BaseResponse baseResponse) {
-
     }
 
     @Override

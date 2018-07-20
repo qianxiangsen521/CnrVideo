@@ -24,17 +24,16 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.cnr.basemodule.R;
 import com.cnr.basemodule.base.delegate.IActivity;
 import com.cnr.basemodule.integration.cache.Cache;
 import com.cnr.basemodule.integration.cache.CacheType;
-import com.cnr.basemodule.integration.lifecycle.ActivityLifecycleable;
 import com.cnr.basemodule.mvp.IPresenter;
 import com.cnr.basemodule.utils.ArmsUtils;
 
-import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import javax.inject.Inject;
 
@@ -53,9 +52,8 @@ import io.reactivex.subjects.Subject;
  * <a href="https://github.com/JessYanCoding">Follow me</a>
  * ================================================
  */
-public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivity implements IActivity, ActivityLifecycleable {
+public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivity implements IActivity{
     protected final String TAG = this.getClass().getSimpleName();
-    private final BehaviorSubject<ActivityEvent> mLifecycleSubject = BehaviorSubject.create();
     private Cache<String, Object> mCache;
     private Unbinder mUnbinder;
 
@@ -71,13 +69,6 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
         }
         return mCache;
     }
-
-    @NonNull
-    @Override
-    public final Subject<ActivityEvent> provideLifecycleSubject() {
-        return mLifecycleSubject;
-    }
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

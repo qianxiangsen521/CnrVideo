@@ -26,7 +26,6 @@ import com.cnr.basemodule.integration.IRepositoryManager;
 import com.cnr.basemodule.integration.RepositoryManager;
 import com.cnr.basemodule.integration.cache.Cache;
 import com.cnr.basemodule.integration.cache.CacheType;
-import com.cnr.basemodule.integration.lifecycle.ActivityLifecycleForRxLifecycle;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -74,10 +73,6 @@ public abstract class AppModule {
     @Binds
     @Named("ActivityLifecycle")
     abstract Application.ActivityLifecycleCallbacks bindActivityLifecycle(ActivityLifecycle activityLifecycle);
-
-    @Binds
-    @Named("ActivityLifecycleForRxLifecycle")
-    abstract Application.ActivityLifecycleCallbacks bindActivityLifecycleForRxLifecycle(ActivityLifecycleForRxLifecycle activityLifecycleForRxLifecycle);
 
     @Binds
     abstract FragmentManager.FragmentLifecycleCallbacks bindFragmentLifecycle(FragmentLifecycle fragmentLifecycle);

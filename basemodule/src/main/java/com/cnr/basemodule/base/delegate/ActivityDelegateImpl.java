@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.cnr.basemodule.utils.ArmsUtils;
 
@@ -34,6 +35,10 @@ import org.simple.eventbus.EventBus;
  * <a href="https://github.com/JessYanCoding">Follow me</a>
  * ================================================
  */
+
+/**
+ * Avtivity 实现　IActivity　
+ */
 public class ActivityDelegateImpl implements ActivityDelegate {
     private Activity mActivity;
     private IActivity iActivity;
@@ -46,19 +51,18 @@ public class ActivityDelegateImpl implements ActivityDelegate {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        //如果要使用 EventBus 请将此方法返回 true
+        //如果要使用 EventBus iActivity.useEventBus()　此方法返回 　true　｜　false
         if (iActivity.useEventBus()){
             //注册到事件主线
             EventBus.getDefault().register(mActivity);
         }
 
-        //这里提供 AppComponent 对象给 BaseActivity 的子类, 用于 Dagger2 的依赖注入
+        //提前执行　setupActivityComponent　　这里提供 AppComponent 对象给 BaseActivity 的子类, 用于 Dagger2 的依赖注入
         iActivity.setupActivityComponent(ArmsUtils.obtainAppComponentFromContext(mActivity));
     }
 
     @Override
     public void onStart() {
-
     }
 
     @Override

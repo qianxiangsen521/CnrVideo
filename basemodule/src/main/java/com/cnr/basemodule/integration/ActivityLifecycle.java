@@ -39,16 +39,11 @@ import javax.inject.Singleton;
 import dagger.Lazy;
 
 
+
+
 /**
- * ================================================
- * {@link Application.ActivityLifecycleCallbacks} 默认实现类
- * 通过 {@link ActivityDelegate} 管理 {@link Activity}
- *
- * @see <a href="http://www.jianshu.com/p/75a5c24174b2">ActivityLifecycleCallbacks 分析文章</a>
- * Created by JessYan on 21/02/2017 14:23
- * <a href="mailto:jess.yan.effort@gmail.com">Contact me</a>
- * <a href="https://github.com/JessYanCoding">Follow me</a>
- * ================================================
+ * qxs　
+ *  mApplication.registerActivityLifecycleCallbacks(mActivityLifecycle);
  */
 @Singleton
 public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks {
@@ -70,12 +65,13 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
 
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-        //如果 intent 包含了此字段,并且为 true 说明不加入到 list 进行统一管理
+        //如果 intent 包含了此字段,并且为 true 说明activity不加入到 list 进行统一管理
         boolean isNotAdd = false;
         if (activity.getIntent() != null)
             isNotAdd = activity.getIntent().getBooleanExtra(AppManager.IS_NOT_ADD_ACTIVITY_LIST, false);
 
         if (!isNotAdd)
+            //默认Activity添加到AppManager中
             mAppManager.addActivity(activity);
 
         //配置ActivityDelegate
@@ -83,11 +79,13 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
             ActivityDelegate activityDelegate = fetchActivityDelegate(activity);
             if (activityDelegate == null) {
                 Cache<String, Object> cache = getCacheFromActivity((IActivity) activity);
+                //ActivityDelegateImpl　添加到cache　中
                 activityDelegate = new ActivityDelegateImpl(activity);
                 //使用 IntelligentCache.KEY_KEEP 作为 key 的前缀, 可以使储存的数据永久存储在内存中
                 //否则存储在 LRU 算法的存储空间中, 前提是 Activity 使用的是 IntelligentCache (框架默认使用)
                 cache.put(IntelligentCache.KEY_KEEP + ActivityDelegate.ACTIVITY_DELEGATE, activityDelegate);
             }
+            //执行　ActivityDelegate　onCreate
             activityDelegate.onCreate(savedInstanceState);
         }
 
@@ -98,6 +96,7 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
     public void onActivityStarted(Activity activity) {
         ActivityDelegate activityDelegate = fetchActivityDelegate(activity);
         if (activityDelegate != null) {
+            //执行　ActivityDelegate　onStart
             activityDelegate.onStart();
         }
     }
@@ -105,7 +104,7 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
     @Override
     public void onActivityResumed(Activity activity) {
         mAppManager.setCurrentActivity(activity);
-
+        //fetchActivityDelegate　获取　cache
         ActivityDelegate activityDelegate = fetchActivityDelegate(activity);
         if (activityDelegate != null) {
             activityDelegate.onResume();

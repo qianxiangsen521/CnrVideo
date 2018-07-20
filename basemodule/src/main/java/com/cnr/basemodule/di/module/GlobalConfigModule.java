@@ -44,7 +44,6 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import me.jessyan.rxerrorhandler.handler.listener.ResponseErrorListener;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 
@@ -65,11 +64,9 @@ public class GlobalConfigModule {
     private BaseImageLoaderStrategy mLoaderStrategy;
     private GlobalHttpHandler mHandler;
     private List<Interceptor> mInterceptors;
-    private ResponseErrorListener mErrorListener;
     private File mCacheFile;
     private ClientModule.RetrofitConfiguration mRetrofitConfiguration;
     private ClientModule.OkhttpConfiguration mOkhttpConfiguration;
-    private ClientModule.RxCacheConfiguration mRxCacheConfiguration;
     private AppModule.GsonConfiguration mGsonConfiguration;
     private RequestInterceptor.Level mPrintHttpLogLevel;
     private FormatPrinter mFormatPrinter;
@@ -81,11 +78,9 @@ public class GlobalConfigModule {
         this.mLoaderStrategy = builder.loaderStrategy;
         this.mHandler = builder.handler;
         this.mInterceptors = builder.interceptors;
-        this.mErrorListener = builder.responseErrorListener;
         this.mCacheFile = builder.cacheFile;
         this.mRetrofitConfiguration = builder.retrofitConfiguration;
         this.mOkhttpConfiguration = builder.okhttpConfiguration;
-        this.mRxCacheConfiguration = builder.rxCacheConfiguration;
         this.mGsonConfiguration = builder.gsonConfiguration;
         this.mPrintHttpLogLevel = builder.printHttpLogLevel;
         this.mFormatPrinter = builder.formatPrinter;
@@ -158,17 +153,6 @@ public class GlobalConfigModule {
     }
 
 
-    /**
-     * 提供处理 RxJava 错误的管理器的回调
-     *
-     * @return
-     */
-    @Singleton
-    @Provides
-    ResponseErrorListener provideResponseErrorListener() {
-        return mErrorListener == null ? ResponseErrorListener.EMPTY : mErrorListener;
-    }
-
 
     @Singleton
     @Provides
@@ -184,12 +168,6 @@ public class GlobalConfigModule {
         return mOkhttpConfiguration;
     }
 
-    @Singleton
-    @Provides
-    @Nullable
-    ClientModule.RxCacheConfiguration provideRxCacheConfiguration() {
-        return mRxCacheConfiguration;
-    }
 
     @Singleton
     @Provides
@@ -240,11 +218,9 @@ public class GlobalConfigModule {
         private BaseImageLoaderStrategy loaderStrategy;
         private GlobalHttpHandler handler;
         private List<Interceptor> interceptors;
-        private ResponseErrorListener responseErrorListener;
         private File cacheFile;
         private ClientModule.RetrofitConfiguration retrofitConfiguration;
         private ClientModule.OkhttpConfiguration okhttpConfiguration;
-        private ClientModule.RxCacheConfiguration rxCacheConfiguration;
         private AppModule.GsonConfiguration gsonConfiguration;
         private RequestInterceptor.Level printHttpLogLevel;
         private FormatPrinter formatPrinter;
@@ -284,11 +260,6 @@ public class GlobalConfigModule {
         }
 
 
-        public Builder responseErrorListener(ResponseErrorListener listener) {//处理所有RxJava的onError逻辑
-            this.responseErrorListener = listener;
-            return this;
-        }
-
 
         public Builder cacheFile(File cacheFile) {
             this.cacheFile = cacheFile;
@@ -305,10 +276,6 @@ public class GlobalConfigModule {
             return this;
         }
 
-        public Builder rxCacheConfiguration(ClientModule.RxCacheConfiguration rxCacheConfiguration) {
-            this.rxCacheConfiguration = rxCacheConfiguration;
-            return this;
-        }
 
         public Builder gsonConfiguration(AppModule.GsonConfiguration gsonConfiguration) {
             this.gsonConfiguration = gsonConfiguration;
