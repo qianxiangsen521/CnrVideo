@@ -729,7 +729,6 @@ public class IjkVideoView extends FrameLayout implements MediaPlayerControl {
     //-------------------------------- qxs
     @Override
     public boolean onTrackballEvent(MotionEvent ev) {
-        Log.d("TAGTAG", "onTrackballEvent: ");
         if (isInPlaybackState() && mMediaController != null) {
             toggleMediaControlsVisiblity();
         }

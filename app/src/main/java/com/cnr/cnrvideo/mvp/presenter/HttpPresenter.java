@@ -32,6 +32,7 @@ import com.cnr.cnrvideo.R;
 import com.cnr.cnrvideo.fragment.entity.BaseResponse;
 import com.cnr.cnrvideo.mvp.contract.HttpContract;
 import com.cnr.cnrvideo.mvp.model.HttpModel;
+import com.cnr.cnrvideo.response.PlayInfoResponse;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +57,8 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 @ActivityScope
 public class HttpPresenter extends BasePresenter<HttpContract.Model, HttpContract.View>
-        implements HttpDataListener<com.cnr.cnrvideo.response.BaseResponse>,EasyPermissions.PermissionCallbacks{
+        implements HttpDataListener<com.cnr.cnrvideo.response.BaseResponse>,
+        EasyPermissions.PermissionCallbacks{
 
     private static final int RC_LOCATION_CONTACTS_PERM = 1001;
 
@@ -82,7 +84,7 @@ public class HttpPresenter extends BasePresenter<HttpContract.Model, HttpContrac
 
     public void requestUsers() {
         requestPermisstionTask();
-         }
+    }
 
     @AfterPermissionGranted(RC_LOCATION_CONTACTS_PERM)
     public void requestPermisstionTask() {
@@ -127,11 +129,17 @@ public class HttpPresenter extends BasePresenter<HttpContract.Model, HttpContrac
 
     @Override
     public void onSubscribe(Disposable d) {
-
+        mRootView.startLoadMore();
     }
 
     @Override
     public void onNext(com.cnr.cnrvideo.response.BaseResponse baseResponse) {
+        if (baseResponse instanceof PlayInfoResponse){
+            PlayInfoResponse playInfoResponse = (PlayInfoResponse)baseResponse;
+            Log.d("TAGTAG", "onNext: "+playInfoResponse.getPlaySources().get(0).getSourceUrl());
+            mRootView.showMessage(playInfoResponse.getPlaySources().get(0).getSourceUrl());
+
+        }
     }
 
     @Override
@@ -141,6 +149,6 @@ public class HttpPresenter extends BasePresenter<HttpContract.Model, HttpContrac
 
     @Override
     public void onCompleted() {
-
+        mRootView.endLoadMore();
     }
 }

@@ -1,10 +1,12 @@
 package com.cnr.cnrvideo;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -17,6 +19,7 @@ import com.cnr.cnrvideo.di.component.DaggerUserComponent;
 import com.cnr.cnrvideo.di.module.HttpModule;
 import com.cnr.cnrvideo.mvp.contract.HttpContract;
 import com.cnr.cnrvideo.mvp.presenter.HttpPresenter;
+import com.cnr.cnrvideo.response.PlayInfoResponse;
 import com.cnr.coremodule.widget.media.AndroidMediaController;
 import com.cnr.coremodule.widget.media.IjkVideoView;
 
@@ -29,7 +32,6 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 public class MainActivity extends BaseActivity<HttpPresenter> implements
         HttpContract.View,PlaySourceFragment.OnSelectSourceListener {
     private boolean mBackPressed;
-    private String mVideoPath = "http://117.139.20.20:6410/28000001/00000000000700000000000011176389";
     AndroidMediaController mMediaController;
     @BindView(R.id.ijkVideoView)
     IjkVideoView mVideoView;
@@ -41,6 +43,8 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements
     private int mFragCurrentIndex;
 
     public static final int FRAGMENT_PLAY_SOURCE = 1;
+
+    private int playType = 1;
 
     @Override
     public void setupActivityComponent(@NonNull AppComponent appComponent) {
@@ -59,12 +63,11 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements
     public void initData(@Nullable Bundle savedInstanceState) {
         getSupportActionBar().hide();
         // init player
-        mMediaController = new AndroidMediaController(this);
+        mMediaController = new AndroidMediaController(this,playType);
         IjkMediaPlayer.loadLibrariesOnce(null);
         IjkMediaPlayer.native_profileBegin("libijkplayer.so");
         mVideoView.setMediaController(mMediaController);
-        mVideoView.setVideoPath(mVideoPath);
-        mVideoView.start();
+
 
     }
 
@@ -94,19 +97,28 @@ public class MainActivity extends BaseActivity<HttpPresenter> implements
     public void endLoadMore() {
 
     }
-
     @Override
     public void showMessage(@NonNull String message) {
+        mVideoView.setVideoPath("http://live.bctv.52ytv.cn/tv/2/133c96b/5a151dd0/bc4448b79bec4bf133840ec41d50e597.m3u8");
+        mVideoView.start();
+    }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+       mMediaController.onConfigurationChanged(newConfig);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (mMediaController.isLocked()){
-            mMediaController.setOrientation();
-        }else{
-            mMediaController.locked();
-            mMediaController.setOrientation();
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (mMediaController.isLocked()){
+                mMediaController.setOrientation();
+            }else{
+                mMediaController.locked();
+                mMediaController.setOrientation();
+            }
         }
         return super.onKeyDown(keyCode, event);
     }

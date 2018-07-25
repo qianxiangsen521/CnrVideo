@@ -36,6 +36,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.Slide;
 import android.transition.TransitionManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -103,7 +104,6 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
 
     private Animation rightEnterToLeftAnimation;
 
-
     protected float mDownX;
     protected float mDownY;
     protected boolean mChangeVolume;
@@ -145,15 +145,17 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     private ImageView player_share_img;
     private ImageView player_scale_img;
 
-
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm");
 
-    public AndroidMediaController(Context mContext) {
-        initView(mContext);
+    private int playType;
+    public AndroidMediaController(Context mContext,int playType) {
+        initView(mContext,playType);
+
     }
 
-    private void initView(Context mContext) {
+    private void initView(Context mContext,int playType) {
         activity = CommonUtil.getAppCompActivity(mContext);
+        this.playType = playType;
         player_contorl_top_layout = activity.findViewById(R.id.player_contorl_top_layout);
         player_contorl_bottom_layout = activity.findViewById(R.id.player_contorl_bottom_layout);
         player_control_backlayout_ConstraintLayout = activity.findViewById(R.id.player_control_backlayout_ConstraintLayout);
@@ -185,6 +187,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         if (mProgress != null) {
             if (mProgress instanceof SeekBar) {
                 SeekBar seeker = (SeekBar) mProgress;
+
                 seeker.setOnSeekBarChangeListener(mSeekListener);
             }
             mProgress.setMax(1000);
@@ -222,6 +225,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         batteryLevel = activity.findViewById(R.id.battery_level);
         player_source = activity.findViewById(R.id.player_source);
         setSystemTimeAndBattery();
+        setSmallScreen();
     }
 
     public void showFragment(){
@@ -324,7 +328,9 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             if (root_player_contorl.getVisibility() != View.GONE){
                 startAnimation(root_player_contorl,rightEnterToLeftAnimation,View.GONE);
             }
-            setProgress();
+//            if (!isPlayTypeLive()){
+                setProgress();
+//            }
             if (mPauseButton != null) {
                 mPauseButton.requestFocus();
             }
@@ -344,8 +350,9 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
             mShowing = true;
         }
         updatePausePlay();
-        mHandler.sendEmptyMessage(SHOW_PROGRESS);
-
+//        if (!isPlayTypeLive()){
+            mHandler.sendEmptyMessage(SHOW_PROGRESS);
+//        }
         Message msg = mHandler.obtainMessage(FADE_OUT);
         if (timeout != 0) {
             mHandler.removeMessages(FADE_OUT);
@@ -359,12 +366,18 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         View decorView = activity.getWindow().getDecorView();
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                |View. SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                |View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        |View. SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        |View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         |View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
+    }
+    private boolean isPlayTypeLive(){
+        if (playType == com.cnr.coremodule.widget.util.Configuration.PLAY_LIVE){
+            return true;
+        }
+        return false;
     }
 
     private void showNavigationBar() {
@@ -372,9 +385,9 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-             | View. SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View. SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         |View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
     }
@@ -475,6 +488,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     };
 
     public int setProgress() {
+
         if (mPlayer == null || mDragging) {
             return 0;
         }
@@ -601,6 +615,9 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
     }
 
     private void disableUnsupportedButtons() {
+        if (mPlayer == null){
+            return;
+        }
         try {
             if (mPauseButton != null && !mPlayer.canPause()) {
                 mPauseButton.setEnabled(false);
@@ -620,6 +637,7 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         @Override
         public void onClick(View v) {
             if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+
                 setFullScreen();
             } else {
                 setSmallScreen();
@@ -634,10 +652,9 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
         attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
         activity.getWindow().setAttributes(attrs);
-        ijkVideoView.toggleAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
+        ijkVideoView.toggleAspectRatio(IRenderView.AR_MATCH_PARENT);
 
     }
-
 
 
     /**
@@ -650,10 +667,21 @@ public class AndroidMediaController  implements IMediaController,View.OnTouchLis
         WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
         attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
         activity.getWindow().setAttributes(attrs);
-        ijkVideoView.toggleAspectRatio(IRenderView.AR_ASPECT_FILL_PARENT);
+
+        ijkVideoView.toggleAspectRatio(IRenderView.AR_MATCH_PARENT);
+
 
 
     }
+    public void onConfigurationChanged(Configuration newConfig) {
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setSmallScreen();
+        } else {
+            setFullScreen();
+        }
+
+    }
+
 
     private void setVisible(int isVis){
         isVisible(player_source,isVis);
